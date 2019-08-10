@@ -30,8 +30,6 @@ namespace UnityEngine.Experimental.Rendering.Universal
 
         Mesh m_ShadowMesh;
 
-        Renderer m_Renderer;
-
         internal int[] applyToSortingLayers => m_ApplyToSortingLayers;
 
         public bool useRendererSilhouette => m_UseRendererSilhouette;
@@ -46,8 +44,23 @@ namespace UnityEngine.Experimental.Rendering.Universal
 
         private void Awake()
         {
+            Bounds bounds = new Bounds(Vector3.zero, Vector3.one);
+
+            Renderer renderer = GetComponent<Renderer>();
+            if (renderer != null)
+            {
+                bounds = renderer.bounds;
+            }
+            else
+            {
+                Collider2D collider = GetComponent<Collider2D>();
+                if (collider != null)
+                    bounds = collider.bounds;
+            }
+
+            Vector3 relOffset = bounds.center - transform.position;
             if (m_ShapePath == null || m_ShapePath.Length == 0)
-                m_ShapePath = new Vector3[] { new Vector3(-0.5f, -0.5f), new Vector3(0.5f, -0.5f), new Vector3(0.5f, 0.5f), new Vector3(-0.5f, 0.5f) };
+                m_ShapePath = new Vector3[] { relOffset + new Vector3(-bounds.extents.x, -bounds.extents.y), relOffset + new Vector3(bounds.extents.x, -bounds.extents.y), relOffset + new Vector3(bounds.extents.x, bounds.extents.y), relOffset + new Vector3(-bounds.extents.x, bounds.extents.y)};
 
             m_PreviousParent = transform.parent;
         }
@@ -73,8 +86,8 @@ namespace UnityEngine.Experimental.Rendering.Universal
 
         public void Update()
         {
-            m_Renderer = GetComponent<Renderer>();
-            m_HasRenderer = m_Renderer != null;
+            Renderer renderer = GetComponent<Renderer>();
+            m_HasRenderer = renderer != null;
             if (!m_HasRenderer)
                 m_UseRendererSilhouette = false;
 
