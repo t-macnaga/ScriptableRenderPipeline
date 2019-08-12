@@ -327,12 +327,12 @@ namespace UnityEditor.Rendering.Universal
                     }
                     break;
 
-                case LightType.Disc:
-                    using (new Handles.DrawingScope(Matrix4x4.TRS(light.transform.position, light.transform.rotation, Vector3.one)))
-                    {
-                        CoreLightEditorUtilities.DrawDiscLightWireFrameWithZTest(light);
-                    }
-                    break;
+//                case LightType.Disc:
+//                    using (new Handles.DrawingScope(Matrix4x4.TRS(light.transform.position, light.transform.rotation, Vector3.one)))
+//                    {
+//                        CoreLightEditorUtilities.DrawDiscLightWireFrameWithZTest(light);
+//                    }
+//                    break;
 
                 default:
                     base.OnSceneGUI();
