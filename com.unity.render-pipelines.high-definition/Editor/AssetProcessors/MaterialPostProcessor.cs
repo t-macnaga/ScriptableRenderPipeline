@@ -63,12 +63,11 @@ namespace UnityEditor.Rendering.HighDefinition
                     continue;
 
                 var material = (Material)AssetDatabase.LoadAssetAtPath(asset, typeof(Material));
-                if (!HDEditorUtils.IsHDRPShader(material.shader, upgradable: true))
+                if (!HDShaderUtils.IsHDRPShader(material.shader, upgradable: true))
                     continue;
 
-                ShaderPathID id = HDEditorUtils.GetShaderEnumFromShader(material.shader);
-                var migrations = k_Migrations[id];
-                var latestVersion = migrations.Length;
+                ShaderID id = HDShaderUtils.GetShaderEnumFromShader(material.shader);
+                var latestVersion = k_Migrations.Length;
                 var wasUpgraded = false;
                 var assetVersions = AssetDatabase.LoadAllAssetsAtPath(asset);
                 AssetVersion assetVersion = null;
@@ -105,7 +104,7 @@ namespace UnityEditor.Rendering.HighDefinition
                 //upgrade
                 while (assetVersion.version < latestVersion)
                 {
-                    migrations[assetVersion.version](material);
+                    k_Migrations[assetVersion.version](material, id);
                     assetVersion.version++;
                     wasUpgraded = true;
                 }
@@ -126,49 +125,54 @@ namespace UnityEditor.Rendering.HighDefinition
             }
         }
 
-        // /!\ NEVER change order of migration function. Only add at end !
-        static readonly Dictionary<ShaderPathID, Action<Material>[]> k_Migrations = new Dictionary<ShaderPathID, Action<Material>[]>
+        // Note: It is not possible to separate migration step by kind of shader
+        // used. This is due that user can change shader that material reflect.
+        // And when user do this, the material is not reimported and we have no
+        // hook on this event.
+        // So we must have migration step that work on every materials at once.
+        // Which also means that if we want to update only one shader, we need
+        // to bump all materials version...
+        static readonly Action<Material, ShaderID>[] k_Migrations = new Action<Material, ShaderID>[]
         {
-            { ShaderPathID.Lit, new Action<Material>[] { /* EmissiveIntensityToColor, SecondMigrationStep, ... */ } },
-            { ShaderPathID.LitTesselation, new Action<Material>[] {} },
-            { ShaderPathID.LayeredLit, new Action<Material>[] {} },
-            { ShaderPathID.LayeredLitTesselation, new Action<Material>[] {} },
-            { ShaderPathID.StackLit, new Action<Material>[] {} },
-            { ShaderPathID.Unlit, new Action<Material>[] {} },
-            { ShaderPathID.Fabric, new Action<Material>[] {} },
-            { ShaderPathID.Decal, new Action<Material>[] {} },
-            { ShaderPathID.TerrainLit, new Action<Material>[] {} },
-            { ShaderPathID.SG_Unlit, new Action<Material>[] {} },
-            { ShaderPathID.SG_Lit, new Action<Material>[] {} },
-            { ShaderPathID.SG_Hair, new Action<Material>[] {} },
-            { ShaderPathID.SG_Fabric, new Action<Material>[] {} },
-            { ShaderPathID.SG_StackLit, new Action<Material>[] {} },
-            { ShaderPathID.SG_Decal, new Action<Material>[] {} },
+            /* EmissiveIntensityToColor,
+             * SecondMigrationStep,
+             * ... */ 
         };
 
         #region Migrations
 
         //exemple migration method, remove it after first real migration
-        //static void EmissiveIntensityToColor(Material material)
+        //static void EmissiveIntensityToColor(Material material, ShaderID id)
         //{
-        //    var emissiveIntensity = material.GetFloat("_EmissiveIntensity");
-        //    var emissiveColor = Color.black;
-        //    if (material.HasProperty("_EmissiveColor"))
-        //        emissiveColor = material.GetColor("_EmissiveColor");
-        //    emissiveColor *= emissiveIntensity;
-        //    emissiveColor.a = 1.0f;
-        //    material.SetColor("_EmissiveColor", emissiveColor);
-        //    material.SetColor("_EmissionColor", Color.white);
+        //    switch(id)
+        //    {
+        //        case ShaderID.Lit:
+        //        case ShaderID.LitTesselation:
+        //            var emissiveIntensity = material.GetFloat("_EmissiveIntensity");
+        //            var emissiveColor = Color.black;
+        //            if (material.HasProperty("_EmissiveColor"))
+        //                emissiveColor = material.GetColor("_EmissiveColor");
+        //            emissiveColor *= emissiveIntensity;
+        //            emissiveColor.a = 1.0f;
+        //            material.SetColor("_EmissiveColor", emissiveColor);
+        //            material.SetColor("_EmissionColor", Color.white);
+        //            break;
+        //    }
         //}
         //
-        //static void Serialization_API_Usage(Material material)
+        //static void Serialization_API_Usage(Material material, ShaderID id)
         //{
-        //    var serializedObject = new SerializedObject(material);
-        //    AddSerializedInt(serializedObject, "former", 42);
-        //    RenameSerializedScalar(serializedObject, "former", "new");
-        //    Debug.Log(GetSerializedInt(serializedObject, "new"));
-        //    RemoveSerializedInt(serializedObject, "new");
-        //    serializedObject.ApplyModifiedProperties();
+        //    switch(id)
+        //    {
+        //        case ShaderID.Unlit:
+        //            var serializedObject = new SerializedObject(material);
+        //            AddSerializedInt(serializedObject, "former", 42);
+        //            RenameSerializedScalar(serializedObject, "former", "new");
+        //            Debug.Log(GetSerializedInt(serializedObject, "new"));
+        //            RemoveSerializedInt(serializedObject, "new");
+        //            serializedObject.ApplyModifiedProperties();
+        //            break;
+        //    }
         //}
 
         #endregion
