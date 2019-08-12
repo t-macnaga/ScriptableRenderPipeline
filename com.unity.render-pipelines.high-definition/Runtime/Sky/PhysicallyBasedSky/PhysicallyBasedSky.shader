@@ -175,7 +175,7 @@ Shader "Hidden/HDRP/Sky/PbrSky"
         }
 
         skyColor += radiance * (1 - skyOpacity);
-        skyColor *= _IntensityMultiplier * GetCurrentExposureMultiplier();
+        skyColor *= _IntensityMultiplier * GetCurrentExposureMultiplier(); // Same exposure for both baking and frame rendering
 
         return float4(skyColor, 1.0);
     }
@@ -188,9 +188,7 @@ Shader "Hidden/HDRP/Sky/PbrSky"
     float4 FragRender(Varyings input) : SV_Target
     {
         UNITY_SETUP_STEREO_EYE_INDEX_POST_VERTEX(input);
-        float4 color = RenderSky(input);
-        color.rgb *= GetCurrentExposureMultiplier();
-        return color;
+        return RenderSky(input);
     }
 
     ENDHLSL
