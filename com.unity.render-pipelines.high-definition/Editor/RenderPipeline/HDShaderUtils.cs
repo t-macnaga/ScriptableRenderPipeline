@@ -102,21 +102,11 @@ namespace UnityEditor.Rendering.HighDefinition
         /// <summary>Gather all the shader preprocessors</summary>
         /// <returns>The list of shader preprocessor</returns>
         internal static List<BaseShaderPreprocessor> GetBaseShaderPreprocessorList()
-        {
-            var baseType = typeof(BaseShaderPreprocessor);
-            var assembly = baseType.Assembly;
-
-            var types = AppDomain.CurrentDomain.GetAssemblies()
-                .SelectMany(a => a.GetTypes()
-                    .Where(t => t.IsSubclassOf(baseType))
-                    .Select(Activator.CreateInstance)
-                    .Cast<BaseShaderPreprocessor>()
-                ).ToList();
-
-            return types;
-        }
-
-
+            => UnityEngine.Rendering.CoreUtils
+                .GetAllTypesDerivedFrom<BaseShaderPreprocessor>()
+                .Select(Activator.CreateInstance)
+                .Cast<BaseShaderPreprocessor>().ToList();
+        
         internal static bool IsHDRPShader(Shader shader, bool upgradable = false)
         {
             if (shader.IsShaderGraph())
