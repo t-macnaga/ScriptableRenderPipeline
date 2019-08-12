@@ -297,10 +297,28 @@ namespace UnityEngine.Experimental.Rendering.Universal
         }
 
 
+        static CompositeLightReactor2D FindTopMostCompositeLightReactor(LightReactor2D shadowCaster)
+        {
+            CompositeLightReactor2D retGroup = null;
+
+            Transform transformToCheck = shadowCaster.transform.parent;
+            while(transformToCheck != null)
+            {
+                CompositeLightReactor2D currentGroup = transformToCheck.GetComponent<CompositeLightReactor2D>();
+                if (currentGroup != null)
+                    retGroup = currentGroup;
+
+                transformToCheck = transformToCheck.parent;
+            }
+
+            return retGroup;
+        }
+
+
         public static bool AddToLightReactorToGroup(LightReactor2D shadowCaster, ref ShadowCasterGroup2D shadowCasterGroup)
         {
-            // We should redo this
-            ShadowCasterGroup2D newShadowCasterGroup = shadowCaster.GetComponentInParent(typeof(CompositeLightReactor2D)) as ShadowCasterGroup2D;
+            ShadowCasterGroup2D newShadowCasterGroup = FindTopMostCompositeLightReactor(shadowCaster) as ShadowCasterGroup2D;
+
             if (newShadowCasterGroup == null)
                 newShadowCasterGroup = shadowCaster.GetComponent<LightReactor2D>();
 

@@ -39,8 +39,6 @@ namespace UnityEngine.Experimental.Rendering.Universal
 
         int m_PreviousShadowGroup = 0;
         bool m_PreviousCastsShadows = true;
-        Transform m_PreviousParent;
-
 
         private void Awake()
         {
@@ -62,7 +60,6 @@ namespace UnityEngine.Experimental.Rendering.Universal
             if (m_ShapePath == null || m_ShapePath.Length == 0)
                 m_ShapePath = new Vector3[] { relOffset + new Vector3(-bounds.extents.x, -bounds.extents.y), relOffset + new Vector3(bounds.extents.x, -bounds.extents.y), relOffset + new Vector3(bounds.extents.x, bounds.extents.y), relOffset + new Vector3(-bounds.extents.x, bounds.extents.y)};
 
-            m_PreviousParent = transform.parent;
         }
 
 
@@ -96,6 +93,7 @@ namespace UnityEngine.Experimental.Rendering.Universal
 
             if (rebuildMesh)
                 ShadowUtility.GenerateShadowMesh(ref m_Mesh, m_ShapePath);
+
 
             m_PreviousShadowCasterGroup = m_ShadowCasterGroup;
             bool addedToNewGroup = LightUtility.AddToLightReactorToGroup(this, ref m_ShadowCasterGroup);
