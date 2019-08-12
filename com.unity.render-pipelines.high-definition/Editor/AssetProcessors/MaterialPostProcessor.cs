@@ -114,6 +114,8 @@ namespace UnityEditor.Rendering.HighDefinition
             }
         }
 
+        // this is workarround due to FB 1175514
+        // [TODO: clean when fixed]
         static void DelayedSubAssetCreation(String assetPath, ScriptableObject subasset, int frameToWait)
         {
             if (frameToWait > 0)
