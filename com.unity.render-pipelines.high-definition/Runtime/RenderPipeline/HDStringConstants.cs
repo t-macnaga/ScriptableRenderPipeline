@@ -291,6 +291,9 @@ namespace UnityEngine.Rendering.HighDefinition
         public static readonly int _TaaFrameInfo = Shader.PropertyToID("_TaaFrameInfo");
         public static readonly int _TaaJitterStrength = Shader.PropertyToID("_TaaJitterStrength");
 
+        public static readonly int _WorldSpaceCameraPos1 = Shader.PropertyToID("_WorldSpaceCameraPos1");
+        public static readonly int _ViewMatrix1 = Shader.PropertyToID("_ViewMatrix1");
+
         public static readonly int _XRViewCount = Shader.PropertyToID("_XRViewCount");
         public static readonly int _XRViewConstants = Shader.PropertyToID("_XRViewConstants");
 
@@ -512,6 +515,8 @@ namespace UnityEngine.Rendering.HighDefinition
         public static readonly int _AerosolSeaLevelScattering      = Shader.PropertyToID("_AerosolSeaLevelScattering");
 
         public static readonly int _GroundAlbedo                   = Shader.PropertyToID("_GroundAlbedo");
+        public static readonly int _IntensityMultiplier            = Shader.PropertyToID("_IntensityMultiplier");
+
         public static readonly int _PlanetCenterPosition           = Shader.PropertyToID("_PlanetCenterPosition");
 
         public static readonly int _PlanetRotation                 = Shader.PropertyToID("_PlanetRotation");
@@ -525,6 +530,8 @@ namespace UnityEngine.Rendering.HighDefinition
 
         public static readonly int _HasSpaceEmissionTexture        = Shader.PropertyToID("_HasSpaceEmissionTexture");
         public static readonly int _SpaceEmissionTexture           = Shader.PropertyToID("_SpaceEmissionTexture");
+
+        public static readonly int _RenderSunDisk                  = Shader.PropertyToID("_RenderSunDisk");
 
 #if ENABLE_RAYTRACING
         // Raytracing variables
@@ -846,7 +853,7 @@ namespace UnityEngine.Rendering.HighDefinition
         public const string kUVDetail = "_UVDetail";
         public const string kUVDetailsMappingMask = "_UVDetailsMappingMask";
         public const string kReceivesSSR = "_ReceivesSSR";
-        public const string kAdditionalVelocityChange = "_AddVelocityChange";
+        public const string kAddPrecomputedVelocity = "_AddPrecomputedVelocity";
 
         public static readonly Color[] kLayerColors =
         {
