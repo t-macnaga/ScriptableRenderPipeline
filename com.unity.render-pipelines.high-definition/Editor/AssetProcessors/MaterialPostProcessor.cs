@@ -66,7 +66,7 @@ namespace UnityEditor.Rendering.HighDefinition
                 if (!HDShaderUtils.IsHDRPShader(material.shader, upgradable: true))
                     continue;
 
-                ShaderID id = HDShaderUtils.GetShaderEnumFromShader(material.shader);
+                HDShaderUtils.ShaderID id = HDShaderUtils.GetShaderEnumFromShader(material.shader);
                 var latestVersion = k_Migrations.Length;
                 var wasUpgraded = false;
                 var assetVersions = AssetDatabase.LoadAllAssetsAtPath(asset);
@@ -132,7 +132,7 @@ namespace UnityEditor.Rendering.HighDefinition
         // So we must have migration step that work on every materials at once.
         // Which also means that if we want to update only one shader, we need
         // to bump all materials version...
-        static readonly Action<Material, ShaderID>[] k_Migrations = new Action<Material, ShaderID>[]
+        static readonly Action<Material, HDShaderUtils.ShaderID>[] k_Migrations = new Action<Material, HDShaderUtils.ShaderID>[]
         {
             /* EmissiveIntensityToColor,
              * SecondMigrationStep,
@@ -191,6 +191,7 @@ namespace UnityEditor.Rendering.HighDefinition
             Texture
         }
 
+        // do not use directly in migration function
         static SerializedProperty FindBase(SerializedObject material, SerializedType type)
         {
             var propertyBase = material.FindProperty("m_SavedProperties");
@@ -216,6 +217,7 @@ namespace UnityEditor.Rendering.HighDefinition
             return propertyBase;
         }
 
+        // do not use directly in migration function
         static (SerializedProperty property, int index, SerializedProperty parent) FindProperty(SerializedObject material, string propertyName, SerializedType type)
         {
             var propertyBase = FindBase(material, type);

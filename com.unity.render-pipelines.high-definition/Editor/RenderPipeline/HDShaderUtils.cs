@@ -7,49 +7,81 @@ using UnityEngine;
 
 namespace UnityEditor.Rendering.HighDefinition
 {
-    public enum ShaderID
-    {
-        Lit,
-        LitTesselation,
-        LayeredLit,
-        LayeredLitTesselation,
-        StackLit,
-        Unlit,
-        Fabric,
-        Decal,
-        TerrainLit,
-        Count_Standard,
-        SG_Unlit = Count_Standard,
-        SG_Lit,
-        SG_Hair,
-        SG_Fabric,
-        SG_StackLit,
-        SG_Decal,
-        Count_All,
-        Count_ShaderGraph = Count_All - Count_Standard
-    }
-
     public class HDShaderUtils
     {
-        delegate void MaterialResetter(Material material);
-        static Dictionary<string, MaterialResetter> k_MaterialResetters = new Dictionary<string, MaterialResetter>()
+        //enum representing all shader and shadergraph that we expose to user
+        public enum ShaderID
         {
-            { "HDRP/LayeredLit",  LayeredLitGUI.SetupMaterialKeywordsAndPass },
-            { "HDRP/LayeredLitTessellation", LayeredLitGUI.SetupMaterialKeywordsAndPass },
-            { "HDRP/Lit", LitGUI.SetupMaterialKeywordsAndPass },
-            { "HDRP/LitTessellation", LitGUI.SetupMaterialKeywordsAndPass },
-            { "HDRP/Unlit", UnlitGUI.SetupUnlitMaterialKeywordsAndPass },
-            { "HDRP/Decal", DecalUI.SetupMaterialKeywordsAndPass },
-            { "HDRP/TerrainLit", TerrainLitGUI.SetupMaterialKeywordsAndPass },
+            Lit,
+            LitTesselation,
+            LayeredLit,
+            LayeredLitTesselation,
+            StackLit,
+            Unlit,
+            Fabric,
+            Decal,
+            TerrainLit,
+            AxF,
+            Count_Standard,
+            SG_Unlit = Count_Standard,
+            SG_Lit,
+            SG_Hair,
+            SG_Fabric,
+            SG_StackLit,
+            SG_Decal,
+            SG_Eye,
+            Count_All,
+            Count_ShaderGraph = Count_All - Count_Standard
+        }
+
+        // exposed shader, for reference while searching the ShaderID
+        static readonly string[] s_ShaderPaths =
+        {
+            "HDRP/Lit",
+            "HDRP/LitTessellation",
+            "HDRP/LayeredLit",
+            "HDRP/LayeredLitTessellation",
+            "HDRP/StackLit",
+            "HDRP/Unlit",
+            "HDRP/Fabric",
+            "HDRP/Decal",
+            "HDRP/TerrainLit",
+            "HDRP/AxF",
         };
 
-        static Dictionary<Type, MaterialResetter> k_ShaderGraphMaterialResetters = new Dictionary<Type, MaterialResetter>
+        // exposed shadergraph, for reference while searching the ShaderID
+        static readonly Type[] s_MasterNodes =
         {
-            { typeof(HDUnlitMasterNode), UnlitGUI.SetupUnlitMaterialKeywordsAndPass },
-            { typeof(HDLitMasterNode), HDLitGUI.SetupMaterialKeywordsAndPass },
-            { typeof(FabricMasterNode), FabricGUI.SetupMaterialKeywordsAndPass },
-            { typeof(HairMasterNode), HairGUI.SetupMaterialKeywordsAndPass },
-            { typeof(StackLitMasterNode), StackLitGUI.SetupMaterialKeywordsAndPass },
+            typeof(HDUnlitMasterNode),
+            typeof(HDLitMasterNode),
+            typeof(HairMasterNode),
+            typeof(FabricMasterNode),
+            typeof(StackLitMasterNode),
+            typeof(DecalMasterNode),
+            typeof(EyeMasterNode),
+        };
+        
+        // list of methods for resetting keywords
+        delegate void MaterialResetter(Material material);
+        static Dictionary<ShaderID, MaterialResetter> k_MaterialResetters = new Dictionary<ShaderID, MaterialResetter>()
+        {
+            { ShaderID.Lit, LitGUI.SetupMaterialKeywordsAndPass },
+            { ShaderID.LayeredLitTesselation, LitGUI.SetupMaterialKeywordsAndPass },
+            { ShaderID.LayeredLit,  LayeredLitGUI.SetupMaterialKeywordsAndPass },
+            { ShaderID.LayeredLitTesselation, LayeredLitGUI.SetupMaterialKeywordsAndPass },
+            // no entry for ShaderID.StackLit
+            { ShaderID.Unlit, UnlitGUI.SetupUnlitMaterialKeywordsAndPass },
+            // no entry for ShaderID.Fabric
+            { ShaderID.Decal, DecalUI.SetupMaterialKeywordsAndPass },
+            { ShaderID.TerrainLit, TerrainLitGUI.SetupMaterialKeywordsAndPass },
+            { ShaderID.AxF, AxFGUI.SetupMaterialKeywordsAndPass },
+            { ShaderID.SG_Unlit, UnlitGUI.SetupUnlitMaterialKeywordsAndPass },
+            { ShaderID.SG_Lit, HDLitGUI.SetupMaterialKeywordsAndPass },
+            { ShaderID.SG_Hair, HairGUI.SetupMaterialKeywordsAndPass },
+            { ShaderID.SG_Fabric, FabricGUI.SetupMaterialKeywordsAndPass },
+            { ShaderID.SG_StackLit, StackLitGUI.SetupMaterialKeywordsAndPass },
+            // no entry for ShaderID.SG_Decal
+            // no entry for ShaderID.SG_Eye
         };
 
         /// <summary>
@@ -63,28 +95,8 @@ namespace UnityEditor.Rendering.HighDefinition
         /// </returns>
         public static bool ResetMaterialKeywords(Material material)
         {
-            MaterialResetter resetter = null;
-
-            // For shader graphs, we retrieve the master node type to get the materials resetter
-            if (material.shader.IsShaderGraph())
-            {
-                Type masterNodeType = null;
-                try
-                {
-                    // GraphUtil.GetOutputNodeType can throw if it's not able to parse the graph
-                    masterNodeType = GraphUtil.GetOutputNodeType(AssetDatabase.GetAssetPath(material.shader));
-                }
-                catch { }
-
-                if (masterNodeType != null)
-                {
-                    k_ShaderGraphMaterialResetters.TryGetValue(masterNodeType, out resetter);
-                }
-            }
-            else
-            {
-                k_MaterialResetters.TryGetValue(material.shader.name, out resetter);
-            }
+            MaterialResetter resetter;
+            k_MaterialResetters.TryGetValue(GetShaderEnumFromShader(material.shader), out resetter);
 
             if (resetter != null)
             {
@@ -120,29 +132,6 @@ namespace UnityEditor.Rendering.HighDefinition
                 return shader.name.Contains("HDRP");
         }
 
-        static readonly string[] s_ShaderPaths =
-        {
-            "HDRP/Lit",
-            "HDRP/LitTessellation",
-            "HDRP/LayeredLit",
-            "HDRP/LayeredLitTessellation",
-            "HDRP/StackLit",
-            "HDRP/Unlit",
-            "HDRP/Fabric",
-            "HDRP/Decal",
-            "HDRP/TerrainLit",
-        };
-
-        static readonly Type[] s_MasterNodes =
-        {
-            typeof(HDUnlitMasterNode),
-            typeof(HDLitMasterNode),
-            typeof(HairMasterNode),
-            typeof(FabricMasterNode),
-            typeof(StackLitMasterNode),
-            typeof(DecalMasterNode),
-        };
-
         internal static string GetShaderPath(ShaderID id)
         {
             int index = (int)id;
@@ -173,11 +162,15 @@ namespace UnityEditor.Rendering.HighDefinition
             {
                 var type = GraphUtil.GetOutputNodeType(AssetDatabase.GetAssetPath(shader));
                 var index = Array.FindIndex(s_MasterNodes, m => m == type);
+                if (index == -1)
+                    throw new ArgumentException("Unknown shader");
                 return (ShaderID)(index + ShaderID.Count_Standard);
             }
             else
             {
                 var index = Array.FindIndex(s_ShaderPaths, m => m == shader.name);
+                if (index == -1)
+                    throw new ArgumentException("Unknown shader");
                 return (ShaderID)index;
             }
         }
