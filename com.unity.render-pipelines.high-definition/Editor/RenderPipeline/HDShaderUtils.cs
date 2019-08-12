@@ -66,7 +66,7 @@ namespace UnityEditor.Rendering.HighDefinition
         static Dictionary<ShaderID, MaterialResetter> k_MaterialResetters = new Dictionary<ShaderID, MaterialResetter>()
         {
             { ShaderID.Lit, LitGUI.SetupMaterialKeywordsAndPass },
-            { ShaderID.LayeredLitTesselation, LitGUI.SetupMaterialKeywordsAndPass },
+            { ShaderID.LitTesselation, LitGUI.SetupMaterialKeywordsAndPass },
             { ShaderID.LayeredLit,  LayeredLitGUI.SetupMaterialKeywordsAndPass },
             { ShaderID.LayeredLitTesselation, LayeredLitGUI.SetupMaterialKeywordsAndPass },
             // no entry for ShaderID.StackLit
