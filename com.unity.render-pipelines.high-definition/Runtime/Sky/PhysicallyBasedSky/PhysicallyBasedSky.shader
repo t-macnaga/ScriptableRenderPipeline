@@ -126,14 +126,14 @@ Shader "Hidden/HDRP/Sky/PbrSky"
 
                 if (_HasGroundEmissionTexture)
                 {
-                    radiance += SAMPLE_TEXTURECUBE(_GroundEmissionTexture, s_trilinear_clamp_sampler, mul(gN, (float3x3)_PlanetRotation));
+                    radiance += SAMPLE_TEXTURECUBE(_GroundEmissionTexture, s_trilinear_clamp_sampler, mul(gN, (float3x3)_PlanetRotation)).rgb;
                 }
 
                 float3 albedo;
 
                 if (_HasGroundAlbedoTexture)
                 {
-                    albedo = SAMPLE_TEXTURECUBE(_GroundAlbedoTexture, s_trilinear_clamp_sampler, mul(gN, (float3x3)_PlanetRotation));
+                    albedo = SAMPLE_TEXTURECUBE(_GroundAlbedoTexture, s_trilinear_clamp_sampler, mul(gN, (float3x3)_PlanetRotation)).rgb;
                 }
                 else
                 {
@@ -163,7 +163,7 @@ Shader "Hidden/HDRP/Sky/PbrSky"
             if (_HasSpaceEmissionTexture)
             {
                 // V points towards the camera.
-                radiance += SAMPLE_TEXTURECUBE(_SpaceEmissionTexture, s_trilinear_clamp_sampler, mul(-V, (float3x3)_SpaceRotation));
+                radiance += SAMPLE_TEXTURECUBE(_SpaceEmissionTexture, s_trilinear_clamp_sampler, mul(-V, (float3x3)_SpaceRotation)).rgb;
             }
         }
 
