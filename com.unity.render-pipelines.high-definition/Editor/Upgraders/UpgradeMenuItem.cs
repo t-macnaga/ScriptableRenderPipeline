@@ -60,7 +60,7 @@ namespace UnityEditor.Rendering.HighDefinition
                     if (mat.HasProperty(vectorToReset))
                         mat.SetVector(vectorToReset, defaultProperties.GetVector(vectorToReset));
 
-                HDEditorUtils.ResetMaterialKeywords(mat);
+                HDShaderUtils.ResetMaterialKeywords(mat);
 
                 mat.renderQueue = mat.shader.renderQueue;
 
@@ -93,7 +93,7 @@ namespace UnityEditor.Rendering.HighDefinition
                         string.Format("{0} / {1} materials updated.", i, length),
                         i / (float)(length - 1));
                     
-                    if (HDEditorUtils.IsHDRPShader(mat.shader))
+                    if (HDShaderUtils.IsHDRPShader(mat.shader))
                     {
                         // We don't handle embed material as we can't rewrite fbx files
                         if (Path.GetExtension(path).ToLower() == ".fbx")

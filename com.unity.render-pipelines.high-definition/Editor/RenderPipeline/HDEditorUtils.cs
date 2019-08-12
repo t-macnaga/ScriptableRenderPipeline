@@ -10,28 +10,6 @@ using UnityEngine.UIElements;
 
 namespace UnityEditor.Rendering.HighDefinition
 {
-    public enum ShaderPathID
-    {
-        Lit,
-        LitTesselation,
-        LayeredLit,
-        LayeredLitTesselation,
-        StackLit,
-        Unlit,
-        Fabric,
-        Decal,
-        TerrainLit,
-        Count_Standard,
-        SG_Unlit = Count_Standard,
-        SG_Lit,
-        SG_Hair,
-        SG_Fabric,
-        SG_StackLit,
-        SG_Decal,
-        Count_All,
-        Count_ShaderGraph = Count_All - Count_Standard
-    }
-
     public class HDEditorUtils
     {
         internal const string FormatingPath =
@@ -67,27 +45,7 @@ namespace UnityEditor.Rendering.HighDefinition
 
         static readonly Action<SerializedProperty, GUIContent> k_DefaultDrawer = (p, l) => EditorGUILayout.PropertyField(p, l);
 
-        delegate void MaterialResetter(Material material);
-        static Dictionary<string, MaterialResetter> k_MaterialResetters = new Dictionary<string, MaterialResetter>()
-        {
-            { "HDRP/LayeredLit",  LayeredLitGUI.SetupMaterialKeywordsAndPass },
-            { "HDRP/LayeredLitTessellation", LayeredLitGUI.SetupMaterialKeywordsAndPass },
-            { "HDRP/Lit", LitGUI.SetupMaterialKeywordsAndPass },
-            { "HDRP/LitTessellation", LitGUI.SetupMaterialKeywordsAndPass },
-            { "HDRP/Unlit", UnlitGUI.SetupUnlitMaterialKeywordsAndPass },
-            { "HDRP/Decal", DecalUI.SetupMaterialKeywordsAndPass },
-            { "HDRP/TerrainLit", TerrainLitGUI.SetupMaterialKeywordsAndPass },
-            { "HDRP/AxF", AxFGUI.SetupMaterialKeywordsAndPass }
-        };
-        
-        static Dictionary<Type, MaterialResetter> k_ShaderGraphMaterialResetters = new Dictionary<Type, MaterialResetter>
-        {
-            { typeof(HDUnlitMasterNode), UnlitGUI.SetupUnlitMaterialKeywordsAndPass },
-            { typeof(HDLitMasterNode), HDLitGUI.SetupMaterialKeywordsAndPass },
-            { typeof(FabricMasterNode), FabricGUI.SetupMaterialKeywordsAndPass },
-            { typeof(HairMasterNode), HairGUI.SetupMaterialKeywordsAndPass },
-            { typeof(StackLitMasterNode), StackLitGUI.SetupMaterialKeywordsAndPass },
-        };
+
 
         internal static T LoadAsset<T>(string relativePath) where T : UnityEngine.Object
             => AssetDatabase.LoadAssetAtPath<T>(HDUtils.GetHDRenderPipelinePath() + relativePath);
@@ -101,59 +59,9 @@ namespace UnityEditor.Rendering.HighDefinition
         /// True: managed to do the operation.
         /// False: unknown shader used in material
         /// </returns>
+        [Obsolete("Use HDShaderUtils.ResetMaterialKeywords instead")]
         public static bool ResetMaterialKeywords(Material material)
-        {
-            MaterialResetter resetter = null;
-
-            // For shader graphs, we retrieve the master node type to get the materials resetter
-            if (material.shader.IsShaderGraph())
-            {
-                Type masterNodeType = null;
-                try
-                {
-                    // GraphUtil.GetOutputNodeType can throw if it's not able to parse the graph
-                    masterNodeType = GraphUtil.GetOutputNodeType(AssetDatabase.GetAssetPath(material.shader));
-                } catch {}
-
-                if (masterNodeType != null)
-                {
-                    k_ShaderGraphMaterialResetters.TryGetValue(masterNodeType, out resetter);
-                }
-            }
-            else
-            {
-                k_MaterialResetters.TryGetValue(material.shader.name, out resetter);
-            }
-
-            if (resetter != null)
-            {
-                CoreEditorUtils.RemoveMaterialKeywords(material);
-                // We need to reapply ToggleOff/Toggle keyword after reset via ApplyMaterialPropertyDrawers
-                MaterialEditor.ApplyMaterialPropertyDrawers(material);
-                resetter(material);
-                EditorUtility.SetDirty(material);
-                return true;
-            }
-
-            return false;
-        }
-
-        /// <summary>Gather all the shader preprocessors</summary>
-        /// <returns>The list of shader preprocessor</returns>
-        internal static List<BaseShaderPreprocessor> GetBaseShaderPreprocessorList()
-        {
-            var baseType = typeof(BaseShaderPreprocessor);
-            var assembly = baseType.Assembly;
-
-            var types = AppDomain.CurrentDomain.GetAssemblies()
-                .SelectMany(a => a.GetTypes()
-                    .Where(t => t.IsSubclassOf(baseType))
-                    .Select(Activator.CreateInstance)
-                    .Cast<BaseShaderPreprocessor>()
-                ).ToList();
-
-            return types;
-        }
+            => HDShaderUtils.ResetMaterialKeywords(material);
 
         static readonly GUIContent s_OverrideTooltip = EditorGUIUtility.TrTextContent("", "Override this setting in component.");
         internal static bool FlagToggle<TEnum>(TEnum v, SerializedProperty property)
@@ -370,81 +278,6 @@ namespace UnityEditor.Rendering.HighDefinition
                 property.intValue = lightLayer;
             }
             EditorGUI.showMixedValue = false;
-        }
-
-        internal static bool IsHDRPShader(Shader shader, bool upgradable = false)
-        {
-            if (shader.IsShaderGraph())
-            {
-                var outputNodeType = GraphUtil.GetOutputNodeType(AssetDatabase.GetAssetPath(shader));
-                return s_MasterNodes.Contains(outputNodeType);
-            }
-            else if (upgradable)
-                return s_ShaderPaths.Contains(shader.name);
-            else
-                return shader.name.Contains("HDRP");
-        }
-
-        static readonly string[] s_ShaderPaths =
-        {
-            "HDRP/Lit",
-            "HDRP/LitTessellation",
-            "HDRP/LayeredLit",
-            "HDRP/LayeredLitTessellation",
-            "HDRP/StackLit",
-            "HDRP/Unlit",
-            "HDRP/Fabric",
-            "HDRP/Decal",
-            "HDRP/TerrainLit"
-        };
-        
-        static readonly Type[] s_MasterNodes =
-        {
-            typeof(HDUnlitMasterNode),
-            typeof(HDLitMasterNode),
-            typeof(HairMasterNode),
-            typeof(FabricMasterNode),
-            typeof(StackLitMasterNode),
-            typeof(DecalMasterNode)
-        };
-
-        internal static string GetShaderPath(ShaderPathID id)
-        {
-            int index = (int)id;
-            if (index < 0 && index >= (int)ShaderPathID.Count_Standard)
-            {
-                Debug.LogError("Trying to access HDRP shader path out of bounds");
-                return "";
-            }
-
-            return s_ShaderPaths[index];
-        }
-
-        internal static Type GetShaderMasterNodeType(ShaderPathID id)
-        {
-            int index = (int)id - (int)ShaderPathID.Count_Standard;
-            if (index < 0 && index >= (int)ShaderPathID.Count_ShaderGraph)
-            {
-                Debug.LogError("Trying to access HDRP shader path out of bounds");
-                return null;
-            }
-
-            return s_MasterNodes[index];
-        }
-
-        internal static ShaderPathID GetShaderEnumFromShader(Shader shader)
-        {
-            if (shader.IsShaderGraph())
-            {
-                var type = GraphUtil.GetOutputNodeType(AssetDatabase.GetAssetPath(shader));
-                var index = Array.FindIndex(s_MasterNodes, m => m == type);
-                return (ShaderPathID)(index + ShaderPathID.Count_Standard);
-            }
-            else
-            {
-                var index = Array.FindIndex(s_ShaderPaths, m => m == shader.name);
-                return (ShaderPathID)index;
-            }
         }
     }
 
