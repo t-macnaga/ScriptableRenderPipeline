@@ -37,11 +37,12 @@ TEXTURE2D_X(_RaytracingDistanceBuffer);
 RW_TEXTURE2D_X(float4, _RaytracingLitBufferRW);
 
 [numthreads(RAYTRACING_DEFERRED_TILE_SIZE, RAYTRACING_DEFERRED_TILE_SIZE, 1)]
-void RAYTRACING_DEFERRED(uint2 groupThreadId : SV_GroupThreadID, uint2 groupId : SV_GroupID)
+void RAYTRACING_DEFERRED(uint3 dispatchThreadId : SV_DispatchThreadID, uint2 groupThreadId : SV_GroupThreadID, uint2 groupId : SV_GroupID)
 {
     // Compute the pixel position to process
     uint2 currentCoord = groupId * RAYTRACING_DEFERRED_TILE_SIZE + groupThreadId;
-    currentCoord.x = currentCoord.x + (unity_StereoEyeIndex * _ScreenSize.x);
+
+    UNITY_STEREO_ASSIGN_COMPUTE_EYE_INDEX(dispatchThreadId.z);
 
     #ifdef HALF_RESOLUTION
     currentCoord *=2;

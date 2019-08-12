@@ -1,8 +1,8 @@
 #pragma only_renderers d3d11
 
 // Temporal Filtering kernels
-#pragma kernel TemporalAccumulationSingle       TEMPORAL_ACCUMULATION_SINGLE=TemporalAccumulationSingle          SINGLE_CHANNEL HISTORY_IS_ARRAY
-#pragma kernel TemporalAccumulationSingleArray  TEMPORAL_ACCUMULATION_SINGLE=TemporalAccumulationSingleArray     SINGLE_CHANNEL     
+#pragma kernel TemporalAccumulationSingle       TEMPORAL_ACCUMULATION_SINGLE=TemporalAccumulationSingle          SINGLE_CHANNEL 
+#pragma kernel TemporalAccumulationSingleArray  TEMPORAL_ACCUMULATION_SINGLE=TemporalAccumulationSingleArray     SINGLE_CHANNEL HISTORY_IS_ARRAY
 
 #pragma kernel TemporalAccumulationColor    TEMPORAL_ACCUMULATION_COLOR=TemporalAccumulationColor      HISTORY_IS_ARRAY
 
@@ -52,8 +52,10 @@ TEXTURE2D_X(_HistoryBuffer);
 
 #if SINGLE_CHANNEL
 [numthreads(SPATIO_TEMPORAL_TILE_SIZE, SPATIO_TEMPORAL_TILE_SIZE, 1)]
-void TEMPORAL_ACCUMULATION_SINGLE(uint2 groupThreadId : SV_GroupThreadID, uint2 groupId : SV_GroupID)
+void TEMPORAL_ACCUMULATION_SINGLE(uint3 dispatchThreadId : SV_DispatchThreadID, uint2 groupThreadId : SV_GroupThreadID, uint2 groupId : SV_GroupID)
 {
+    UNITY_STEREO_ASSIGN_COMPUTE_EYE_INDEX(dispatchThreadId.z);
+
     // Fetch the current pixel coordinate
     uint2 centerCoord = groupId * SPATIO_TEMPORAL_TILE_SIZE + groupThreadId;
 
@@ -116,8 +118,10 @@ void TEMPORAL_ACCUMULATION_SINGLE(uint2 groupThreadId : SV_GroupThreadID, uint2 
 #else
 
 [numthreads(SPATIO_TEMPORAL_TILE_SIZE, SPATIO_TEMPORAL_TILE_SIZE, 1)]
-void TEMPORAL_ACCUMULATION_COLOR(uint2 groupThreadId : SV_GroupThreadID, uint2 groupId : SV_GroupID)
+void TEMPORAL_ACCUMULATION_COLOR(uint3 dispatchThreadId : SV_DispatchThreadID, uint2 groupThreadId : SV_GroupThreadID, uint2 groupId : SV_GroupID)
 {
+    UNITY_STEREO_ASSIGN_COMPUTE_EYE_INDEX(dispatchThreadId.z);
+
     // Fetch the current pixel coordinate
     uint2 centerCoord = groupId * SPATIO_TEMPORAL_TILE_SIZE + groupThreadId;
 
@@ -289,8 +293,10 @@ float ComputeBilateralWeight(BilateralData center, BilateralData tap)
 
 // Separated bilateral filter (two passes, each with 2*Radius taps)
 [numthreads(SPATIO_TEMPORAL_TILE_SIZE, SPATIO_TEMPORAL_TILE_SIZE, 1)]
-void BILATERAL_FILTER(uint2 groupThreadId : SV_GroupThreadID, uint2 groupId : SV_GroupID)
+void BILATERAL_FILTER(uint3 dispatchThreadId : SV_DispatchThreadID, uint2 groupThreadId : SV_GroupThreadID, uint2 groupId : SV_GroupID)
 {
+    UNITY_STEREO_ASSIGN_COMPUTE_EYE_INDEX(dispatchThreadId.z);
+
     // Fetch the current pixel coordinate
     uint2 centerCoord = groupId * SPATIO_TEMPORAL_TILE_SIZE + groupThreadId;
 

@@ -28,8 +28,8 @@ Texture2D<float>                        _StencilTexture;
 TEXTURE2D_X(_DepthTexture);
 
 // Output structure of the reflection raytrace shader
-RWTexture2D<float4>                     _IndirectDiffuseTextureRW;
-RWTexture2D<float4>                     _IndirectDiffuseHitPointTextureRW;
+RW_TEXTURE2D_X(float4, _IndirectDiffuseTextureRW);
+RW_TEXTURE2D_X(float4, _IndirectDiffuseHitPointTextureRW);
 
 [shader("miss")]
 void MissShaderIndirectDiffuse(inout RayIntersection rayIntersection : SV_RayPayload)
@@ -48,12 +48,14 @@ void RayGenFullRes()
     // Compute the pixel coordinate (which matches the half res of the effect)
     uint2 currentCoord = uint2(LaunchIndex.x, LaunchDim.y - LaunchIndex.y - 1);
 
+    UNITY_STEREO_ASSIGN_COMPUTE_EYE_INDEX(LaunchIndex.z);
+
     // Get the scramblingValue of this pixel
     uint2 scramblingValue = ScramblingValue(currentCoord.x, currentCoord.y);
 
     // Clear the textures (in case the sample that we generate does doesn't generate any )
-    _IndirectDiffuseTextureRW[currentCoord] = float4(0.0, 0.0, 0.0, 0.0);
-    _IndirectDiffuseHitPointTextureRW[currentCoord] = float4(0.0, 0.0, 0.0, 1.0);
+    _IndirectDiffuseTextureRW[COORD_TEXTURE2D_X(currentCoord)] = float4(0.0, 0.0, 0.0, 0.0);
+    _IndirectDiffuseHitPointTextureRW[COORD_TEXTURE2D_X(currentCoord)] = float4(0.0, 0.0, 0.0, 1.0);
 
     // Read the depth value
     float depthValue  = LOAD_TEXTURE2D_X(_DepthTexture, currentCoord).r;
@@ -63,7 +65,7 @@ void RayGenFullRes()
         return;
 
     // Convert this to a world space position
-    PositionInputs posInput = GetPositionInput(currentCoord, _ScreenSize.zw, depthValue, _InvViewProjMatrix, _ViewMatrix, 0);
+    PositionInputs posInput = GetPositionInput(currentCoord, _ScreenSize.zw, depthValue, UNITY_MATRIX_I_VP, UNITY_MATRIX_V, 0);
     float distanceToCamera = length(posInput.positionWS);
     float3 positionWS = GetAbsolutePositionWS(posInput.positionWS);
 
@@ -108,10 +110,10 @@ void RayGenFullRes()
     float3 exposedValue = clamp(rayIntersection.color * GetCurrentExposureMultiplier(), 0.0, _RaytracingIntensityClamp);
 
     // We store the clamped, pre-exposed value and the index of the target pixel in the first texture
-    _IndirectDiffuseTextureRW[currentCoord] = float4(exposedValue, 0.0);
+    _IndirectDiffuseTextureRW[COORD_TEXTURE2D_X(currentCoord)] = float4(exposedValue, 0.0);
 
     // In the second texture, we store the sampled direction and the invPDF of the sample
-    _IndirectDiffuseHitPointTextureRW[currentCoord] = float4(sampleDir, 1.0 / samplePDF);
+    _IndirectDiffuseHitPointTextureRW[COORD_TEXTURE2D_X(currentCoord)] = float4(sampleDir, 1.0 / samplePDF);
 }
 
 [shader("raygeneration")]
@@ -124,11 +126,13 @@ void RayGenIntegration()
     // Compute the pixel coordinate to evaluate
     uint2 currentCoord = uint2(LaunchIndex.x, LaunchDim.y - LaunchIndex.y - 1);
 
+    UNITY_STEREO_ASSIGN_COMPUTE_EYE_INDEX(LaunchIndex.z);
+
     // Get the scramblingValue of this pixel
     uint2 scramblingValue = ScramblingValue(currentCoord.x, currentCoord.y);
 
     // Clear the output color texture
-    _IndirectDiffuseTextureRW[currentCoord] = float4(0.0f, 0.0f, 0.0f, 0.0f);
+    _IndirectDiffuseTextureRW[COORD_TEXTURE2D_X(currentCoord)] = float4(0.0f, 0.0f, 0.0f, 0.0f);
 
     // Read the depth value
     float depthValue  = LOAD_TEXTURE2D_X(_DepthTexture, currentCoord).x;
@@ -138,7 +142,7 @@ void RayGenIntegration()
         return;
 
     // Convert this to a world space position
-    PositionInputs posInput = GetPositionInput(currentCoord, 1.0f/LaunchDim.xy, depthValue, _InvViewProjMatrix, _ViewMatrix, 0);
+    PositionInputs posInput = GetPositionInput(currentCoord, 1.0f/LaunchDim.xy, depthValue, UNITY_MATRIX_I_VP, UNITY_MATRIX_V, 0);
     float distanceToCamera = length(posInput.positionWS);
 
     float3 positionWS = GetAbsolutePositionWS(posInput.positionWS);
@@ -205,7 +209,7 @@ void RayGenIntegration()
     finalColor = clamp(finalColor * GetCurrentExposureMultiplier(), 0.0, _RaytracingIntensityClamp);
 
     // We store the sampled color and the weight that shall be used for it (1.0f)
-    _IndirectDiffuseTextureRW[currentCoord] = float4(finalColor, 1.0f);
+    _IndirectDiffuseTextureRW[COORD_TEXTURE2D_X(currentCoord)] = float4(finalColor, 1.0f);
 }
 
 [shader("closesthit")]

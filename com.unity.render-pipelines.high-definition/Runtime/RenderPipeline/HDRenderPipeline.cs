@@ -1966,7 +1966,9 @@ namespace UnityEngine.Rendering.HighDefinition
 
                 using (new ProfilingSample(cmd, "Render screen space shadows", CustomSamplerId.ScreenSpaceShadows.GetSampler()))
                 {
+                        hdCamera.xr.StartSinglePass(cmd, camera, renderContext);
                     RenderScreenSpaceShadows(hdCamera, cmd);
+                        hdCamera.xr.StopSinglePass(cmd, camera, renderContext);
                 }
 
                 if (hdCamera.frameSettings.VolumeVoxelizationRunsAsync())

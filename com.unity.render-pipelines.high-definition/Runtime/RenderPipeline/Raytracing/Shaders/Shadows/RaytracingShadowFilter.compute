@@ -440,10 +440,12 @@ void AREA_SHADOW_DENOISE(uint2 groupThreadId : SV_GroupThreadID, uint2 groupId :
 
 // Separated bilateral filter (two passes, each with 2*Radius taps)
 [numthreads(AREA_BILLATERAL_TILE_SIZE, AREA_BILLATERAL_TILE_SIZE, 1)]
-void WriteShadowTextureDebug(uint2 groupThreadId : SV_GroupThreadID, uint2 groupId : SV_GroupID)
+void WriteShadowTextureDebug(uint3 dispatchThreadId : SV_DispatchThreadID, uint2 groupThreadId : SV_GroupThreadID, uint2 groupId : SV_GroupID)
 {
     // Fetch the current pixel coordinate
     uint2 centerCoord = groupId * AREA_BILLATERAL_TILE_SIZE + groupThreadId;
+
+    UNITY_STEREO_ASSIGN_COMPUTE_EYE_INDEX(dispatchThreadId.z);
 
     // Store the intermediate result
     float shadowValue = _ScreenSpaceShadowsTextureRW[uint3(centerCoord, _RaytracingShadowSlot)];

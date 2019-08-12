@@ -21,6 +21,7 @@ namespace UnityEngine.Rendering.HighDefinition
             // Camera data
             public int width;
             public int height;
+            public int viewCount;
             public float fov;
 
             // Compute buffers
@@ -156,7 +157,7 @@ namespace UnityEngine.Rendering.HighDefinition
             cmd.SetComputeIntParam(config.rayBinningCS, HDShaderIDs._RayBinTileCountX, numTilesRayBinX);
 
             // Run the binning
-            cmd.DispatchCompute(config.rayBinningCS, currentKernel, numTilesRayBinX, numTilesRayBinY, 1);
+            cmd.DispatchCompute(config.rayBinningCS, currentKernel, numTilesRayBinX, numTilesRayBinY, config.viewCount);
         }
 
         static void RenderRaytracingDeferredLighting(CommandBuffer cmd, in DeferredLightingRTParameters parameters, in DeferredLightingRTResources buffers)
@@ -228,12 +229,12 @@ namespace UnityEngine.Rendering.HighDefinition
                 int bufferSizeX = numTilesRayBinX * binningTileSize;
                 int bufferSizeY = numTilesRayBinY * binningTileSize;
 
-                cmd.DispatchRays(parameters.gBufferRaytracingRT, m_RayGenGBufferBinned, (uint)bufferSizeX, (uint)bufferSizeY, 1);
+                cmd.DispatchRays(parameters.gBufferRaytracingRT, m_RayGenGBufferBinned, (uint)bufferSizeX, (uint)bufferSizeY, (uint)parameters.viewCount);
             }
             else
             {
                 cmd.SetRayTracingIntParams(parameters.gBufferRaytracingRT, "_RaytracingHalfResolution", parameters.halfResolution ? 1 : 0);
-                cmd.DispatchRays(parameters.gBufferRaytracingRT, m_RayGenGBuffer, widthResolution, heightResolution, 1);
+                cmd.DispatchRays(parameters.gBufferRaytracingRT, m_RayGenGBuffer, widthResolution, heightResolution, (uint)parameters.viewCount);
             }
 
             // Disable the diffuse lighting only flag
@@ -265,7 +266,7 @@ namespace UnityEngine.Rendering.HighDefinition
             int numTilesYHR = (texHeight + (areaTileSize - 1)) / areaTileSize;
 
             // Compute the texture
-            cmd.DispatchCompute(parameters.deferredRaytracingCS, currentKernel, numTilesXHR, numTilesYHR, 1);
+            cmd.DispatchCompute(parameters.deferredRaytracingCS, currentKernel, numTilesXHR, numTilesYHR, parameters.viewCount);
         }
     }
 #endif

@@ -31,7 +31,7 @@
 #endif
 
 // Workaround for lack of multi compile in compute shaders
-#if defined(SHADER_STAGE_COMPUTE) && defined(UNITY_TEXTURE2D_X_ARRAY_SUPPORTED)
+#if (defined(SHADER_STAGE_COMPUTE) || defined(SHADER_STAGE_RAYTRACING)) && defined(UNITY_TEXTURE2D_X_ARRAY_SUPPORTED)
     #define UNITY_STEREO_INSTANCING_ENABLED
 #endif
 
@@ -101,7 +101,7 @@
 #endif
 
 // Helper macro to assign eye index during compute pass (usually from SV_DispatchThreadID)
-#if defined(SHADER_STAGE_COMPUTE)
+#if defined(SHADER_STAGE_COMPUTE) || defined(SHADER_STAGE_RAYTRACING)
     #if defined(UNITY_STEREO_INSTANCING_ENABLED)
         #define UNITY_STEREO_ASSIGN_COMPUTE_EYE_INDEX(eyeIndex) unity_StereoEyeIndex = eyeIndex;
     #else

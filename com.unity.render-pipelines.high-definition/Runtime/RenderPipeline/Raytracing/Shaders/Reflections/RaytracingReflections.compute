@@ -28,11 +28,12 @@ RW_TEXTURE2D_X(float4, _RaytracingDirectionBuffer);
 TEXTURE2D_X(_SsrClearCoatMaskTexture);
 
 [numthreads(RAYTRACING_REFLECTIONS_TILE_SIZE, RAYTRACING_REFLECTIONS_TILE_SIZE, 1)]
-void RaytracingReflectionsHalfRes(uint2 groupThreadId : SV_GroupThreadID, uint2 groupId : SV_GroupID)
+void RaytracingReflectionsHalfRes(uint3 dispatchThreadId : SV_DispatchThreadID, uint2 groupThreadId : SV_GroupThreadID, uint2 groupId : SV_GroupID)
 {
     // Compute the pixel position to process
     uint2 halfResCoord = groupId * RAYTRACING_REFLECTIONS_TILE_SIZE + groupThreadId;
-    halfResCoord.x = halfResCoord.x + (unity_StereoEyeIndex * _ScreenSize.x);
+
+    UNITY_STEREO_ASSIGN_COMPUTE_EYE_INDEX(dispatchThreadId.z);
 
     // Get the scramblingValue of this pixel
     uint2 scramblingValue = ScramblingValue(halfResCoord.x, halfResCoord.y);
@@ -56,7 +57,7 @@ void RaytracingReflectionsHalfRes(uint2 groupThreadId : SV_GroupThreadID, uint2 
         return;
 
     // Convert this to a world space position 
-    PositionInputs posInput = GetPositionInput(sourceCoord, _ScreenSize.zw, depthValue, _InvViewProjMatrix, _ViewMatrix, 0);
+    PositionInputs posInput = GetPositionInput(sourceCoord, _ScreenSize.zw, depthValue, UNITY_MATRIX_I_VP, UNITY_MATRIX_V, 0);
     float distanceToCamera = length(posInput.positionWS);
     float3 positionWS = GetAbsolutePositionWS(posInput.positionWS);
 
@@ -113,11 +114,12 @@ void RaytracingReflectionsHalfRes(uint2 groupThreadId : SV_GroupThreadID, uint2 
 }
 
 [numthreads(RAYTRACING_REFLECTIONS_TILE_SIZE, RAYTRACING_REFLECTIONS_TILE_SIZE, 1)]
-void RaytracingReflectionsFullRes(uint2 groupThreadId : SV_GroupThreadID, uint2 groupId : SV_GroupID)
+void RaytracingReflectionsFullRes(uint3 dispatchThreadId : SV_DispatchThreadID, uint2 groupThreadId : SV_GroupThreadID, uint2 groupId : SV_GroupID)
 {
     // Compute the pixel position to process
     uint2 currentCoord = groupId * RAYTRACING_REFLECTIONS_TILE_SIZE + groupThreadId;
-    currentCoord.x = currentCoord.x + (unity_StereoEyeIndex * _ScreenSize.x);
+
+    UNITY_STEREO_ASSIGN_COMPUTE_EYE_INDEX(dispatchThreadId.z);
 
     // Get the scramblingValue of this pixel
     uint2 scramblingValue = ScramblingValue(currentCoord.x, currentCoord.y);
@@ -133,7 +135,7 @@ void RaytracingReflectionsFullRes(uint2 groupThreadId : SV_GroupThreadID, uint2 
         return;
 
     // Convert this to a world space position
-    PositionInputs posInput = GetPositionInput(currentCoord, _ScreenSize.zw, depthValue, _InvViewProjMatrix, _ViewMatrix, 0);
+    PositionInputs posInput = GetPositionInput(currentCoord, _ScreenSize.zw, depthValue, UNITY_MATRIX_I_VP, UNITY_MATRIX_V, 0);
     float distanceToCamera = length(posInput.positionWS);
     float3 positionWS = GetAbsolutePositionWS(posInput.positionWS);
 

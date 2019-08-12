@@ -748,7 +748,7 @@ namespace UnityEngine.Rendering.HighDefinition
             int numTilesX = (texWidth + (lightVolumesTileSize - 1)) / lightVolumesTileSize;
             int numTilesY = (texHeight + (lightVolumesTileSize - 1)) / lightVolumesTileSize;
 
-            cmd.DispatchCompute(lightClusterDebugCS, m_LightClusterDebugKernel, numTilesX, numTilesY, 1);
+            cmd.DispatchCompute(lightClusterDebugCS, m_LightClusterDebugKernel, numTilesX, numTilesY, 1); // todo
         }
 
         public ComputeBuffer GetCluster()

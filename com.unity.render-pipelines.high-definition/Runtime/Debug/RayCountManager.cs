@@ -40,6 +40,7 @@ namespace UnityEngine.Rendering.HighDefinition
             m_DebugDisplaySettings = currentDebugDisplaySettings;
             m_PipelineResources = rayTracingResources;
 
+            // todo
             m_RayCountTexture = RTHandles.Alloc(Vector2.one, filterMode: FilterMode.Point, colorFormat: GraphicsFormat.R32G32B32A32_UInt, enableRandomWrite: true, useMipMap: false, name: "RayCountTexture");
 
             // We only require 3 buffers (this supports a maximal size of 8192x8192)

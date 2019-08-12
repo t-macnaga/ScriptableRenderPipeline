@@ -32,8 +32,8 @@ TEXTURE2D_X(_SsrClearCoatMaskTexture);
 // int                                       _SsrStencilExclusionValue;
 
 // Output structure of the reflection raytrace shader
-RWTexture2D<float4>                     _SsrLightingTextureRW;
-RWTexture2D<float4>                     _SsrHitPointTexture;
+RW_TEXTURE2D_X(float4, _SsrLightingTextureRW);
+RW_TEXTURE2D_X(float4, _SsrHitPointTexture);
 
 [shader("miss")]
 void MissShaderReflections(inout RayIntersection rayIntersection : SV_RayPayload)
@@ -51,6 +51,8 @@ void RayGenReflectionHalfRes()
     // Grab the dimensions of the current dispatch
     uint3 LaunchIndex = DispatchRaysIndex();
     uint3 LaunchDim = DispatchRaysDimensions();
+
+    UNITY_STEREO_ASSIGN_COMPUTE_EYE_INDEX(LaunchIndex.z);
 
     // Compute the pixel coordinate (which matches the half res of the effect)
     uint2 halfResCoord = uint2(LaunchIndex.x, LaunchDim.y - LaunchIndex.y - 1);
@@ -70,8 +72,8 @@ void RayGenReflectionHalfRes()
     uint2 sourceCoord = outputCoord + shift;
 
     // Clear the textures (in case the sample that we generate does doesn't generate any )
-    _SsrLightingTextureRW[outputCoord] = float4(0.0, 0.0, 0.0, 0.0);
-    _SsrHitPointTexture[outputCoord] = float4(0.0, 0.0, 0.0, 1.0);
+    _SsrLightingTextureRW[COORD_TEXTURE2D_X(outputCoord)] = float4(0.0, 0.0, 0.0, 0.0);
+    _SsrHitPointTexture[COORD_TEXTURE2D_X(outputCoord)] = float4(0.0, 0.0, 0.0, 1.0);
 
     // Read the depth value
     float depthValue = LOAD_TEXTURE2D_X(_DepthTexture, sourceCoord).r;
@@ -80,8 +82,8 @@ void RayGenReflectionHalfRes()
     if (depthValue == UNITY_RAW_FAR_CLIP_VALUE)
         return;
 
-    // Convert this to a world space position 
-    PositionInputs posInput = GetPositionInput(sourceCoord, _ScreenSize.zw, depthValue, _InvViewProjMatrix, _ViewMatrix, 0);
+    // Convert this to a world space position
+    PositionInputs posInput = GetPositionInput(sourceCoord, _ScreenSize.zw, depthValue, UNITY_MATRIX_I_VP, UNITY_MATRIX_V, 0);
     float distanceToCamera = length(posInput.positionWS);
     float3 positionWS = GetAbsolutePositionWS(posInput.positionWS);
 
@@ -161,10 +163,10 @@ void RayGenReflectionHalfRes()
     float3 exposedValue = clamp(rayIntersection.color * GetCurrentExposureMultiplier(), 0.0, _RaytracingIntensityClamp);
 
     // We store the clamped, pre-exposed value and the index of the target pixel in the first texture
-    _SsrLightingTextureRW[outputCoord] = float4(exposedValue, subPixelSample);
+    _SsrLightingTextureRW[COORD_TEXTURE2D_X(outputCoord)] = float4(exposedValue, subPixelSample);
 
     // In the second texture, we store the sampled direction and the invPDF of the sample
-    _SsrHitPointTexture[outputCoord] = float4(sampleDir, 1.0 / samplePDF);
+    _SsrHitPointTexture[COORD_TEXTURE2D_X(outputCoord)] = float4(sampleDir, 1.0 / samplePDF);
 }
 
 [shader("raygeneration")]
@@ -177,12 +179,14 @@ void RayGenReflectionFullRes()
     // Compute the pixel coordinate (which matches the half res of the effect)
     uint2 currentCoord = uint2(LaunchIndex.x, LaunchDim.y - LaunchIndex.y - 1);
 
+    UNITY_STEREO_ASSIGN_COMPUTE_EYE_INDEX(LaunchIndex.z);
+
     // Get the scramblingValue of this pixel
     uint2 scramblingValue = ScramblingValue(currentCoord.x, currentCoord.y);
 
     // Clear the textures (in case the sample that we generate does doesn't generate any )
-    _SsrLightingTextureRW[currentCoord] = float4(0.0, 0.0, 0.0, 0.0);
-    _SsrHitPointTexture[currentCoord] = float4(0.0, 0.0, 0.0, 1.0);
+    _SsrLightingTextureRW[COORD_TEXTURE2D_X(currentCoord)] = float4(0.0, 0.0, 0.0, 0.0);
+    _SsrHitPointTexture[COORD_TEXTURE2D_X(currentCoord)] = float4(0.0, 0.0, 0.0, 1.0);
 
     // Read the depth value
     float depthValue  = LOAD_TEXTURE2D_X(_DepthTexture, currentCoord).r;
@@ -192,7 +196,7 @@ void RayGenReflectionFullRes()
         return;
 
     // Convert this to a world space position
-    PositionInputs posInput = GetPositionInput(currentCoord, _ScreenSize.zw, depthValue, _InvViewProjMatrix, _ViewMatrix, 0);
+    PositionInputs posInput = GetPositionInput(currentCoord, _ScreenSize.zw, depthValue, UNITY_MATRIX_I_VP, UNITY_MATRIX_V, 0);
     float distanceToCamera = length(posInput.positionWS);
     float3 positionWS = GetAbsolutePositionWS(posInput.positionWS);
 
@@ -279,9 +283,9 @@ void RayGenReflectionFullRes()
     float3 exposedValue = clamp(rayIntersection.color * GetCurrentExposureMultiplier(), 0.0, _RaytracingIntensityClamp);
 
     // We store the clamped, pre-exposed value and the index of the target pixel in the first texture
-    _SsrLightingTextureRW[currentCoord] = float4(exposedValue, 0.0);
+    _SsrLightingTextureRW[COORD_TEXTURE2D_X(currentCoord)] = float4(exposedValue, 0.0);
     // In the second texture, we store the sampled direction and the invPDF of the sample
-    _SsrHitPointTexture[currentCoord] = float4(sampleDir, 1.0 / samplePDF);
+    _SsrHitPointTexture[COORD_TEXTURE2D_X(currentCoord)] = float4(sampleDir, 1.0 / samplePDF);
 }
 
 [shader("raygeneration")]
@@ -294,11 +298,13 @@ void RayGenIntegration()
     // Compute the pixel coordinate to evaluate
     uint2 currentCoord = uint2(LaunchIndex.x, LaunchDim.y - LaunchIndex.y - 1);
 
+    UNITY_STEREO_ASSIGN_COMPUTE_EYE_INDEX(LaunchIndex.z);
+
     // Get the scramblingValue of this pixel
     uint2 scramblingValue = ScramblingValue(currentCoord.x, currentCoord.y);
 
     // Clear the output color texture
-    _SsrLightingTextureRW[currentCoord] = float4(0.0, 0.0, 0.0, 0.0);
+    _SsrLightingTextureRW[COORD_TEXTURE2D_X(currentCoord)] = float4(0.0, 0.0, 0.0, 0.0);
 
     // Read the depth value
     float depthValue  = LOAD_TEXTURE2D_X(_DepthTexture, currentCoord).r;
@@ -308,7 +314,7 @@ void RayGenIntegration()
         return;
 
     // Convert this to a world space position
-    PositionInputs posInput = GetPositionInput(currentCoord, 1.0/LaunchDim.xy, depthValue, _InvViewProjMatrix, _ViewMatrix, 0);
+    PositionInputs posInput = GetPositionInput(currentCoord, 1.0/LaunchDim.xy, depthValue, UNITY_MATRIX_I_VP, UNITY_MATRIX_V, 0);
     float distanceToCamera = length(posInput.positionWS);
 
     float3 positionWS = GetAbsolutePositionWS(posInput.positionWS);
@@ -397,7 +403,7 @@ void RayGenIntegration()
     finalColor = clamp(finalColor * GetCurrentExposureMultiplier(), 0.0, _RaytracingIntensityClamp);
 
     // We store the sampled color and the weight that shall be used for it (1.0)
-    _SsrLightingTextureRW[currentCoord] = float4(finalColor, 1.0);
+    _SsrLightingTextureRW[COORD_TEXTURE2D_X(currentCoord)] = float4(finalColor, 1.0);
 }
 
 [shader("closesthit")]
