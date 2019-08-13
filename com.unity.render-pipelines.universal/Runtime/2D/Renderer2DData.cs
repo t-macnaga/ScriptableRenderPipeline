@@ -1,5 +1,4 @@
 using System;
-using UnityEngine.Rendering;
 using UnityEngine.Rendering.Universal;
 using UnityEngine.Scripting.APIUpdating;
 using UnityEngine.Serialization;
@@ -8,7 +7,6 @@ using UnityEngine.Serialization;
 using UnityEditor;
 using UnityEditor.ProjectWindowCallback;
 #endif
-
 
 namespace UnityEngine.Experimental.Rendering.Universal
 {
@@ -35,6 +33,9 @@ namespace UnityEngine.Experimental.Rendering.Universal
         [SerializeField]
         Shader m_BlitShader = null;
 
+        [SerializeField]
+        PostProcessData m_PostProcessData;
+
         public float hdrEmulationScale => m_HDREmulationScale;
         public Light2DBlendStyle[] lightBlendStyles => m_LightBlendStyles;
 
@@ -43,6 +44,7 @@ namespace UnityEngine.Experimental.Rendering.Universal
         internal Shader pointLightShader => m_PointLightShader;
         internal Shader pointLightVolumeShader => m_PointLightVolumeShader;
         internal Shader blitShader => m_BlitShader;
+        internal PostProcessData postProcessData => m_PostProcessData;
 
         protected override ScriptableRenderer Create()
         {
@@ -94,6 +96,7 @@ namespace UnityEngine.Experimental.Rendering.Universal
             m_PointLightShader = Shader.Find("Hidden/Light2D-Point");
             m_PointLightVolumeShader = Shader.Find("Hidden/Light2d-Point-Volumetric");
             m_BlitShader = Shader.Find("Hidden/Universal Render Pipeline/Blit");
+            m_PostProcessData = AssetDatabase.LoadAssetAtPath<PostProcessData>("Packages/com.unity.render-pipelines.universal/Runtime/Data/PostProcessData.asset");
         }
 
         protected override void OnEnable()
