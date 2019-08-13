@@ -10,7 +10,7 @@ namespace UnityEngine.Experimental.Rendering.Universal
         Render2DLightingPass m_Render2DLightingPass;
         PostProcessPass m_PostProcessPass;
         FinalBlitPass m_FinalBlitPass;
-        //PostProcessPass m_FinalPostProcessPass;
+        PostProcessPass m_FinalPostProcessPass;
 
         RenderTargetHandle m_ColorTargetHandle;
         RenderTargetHandle m_AfterPostProcessColor;
@@ -22,7 +22,7 @@ namespace UnityEngine.Experimental.Rendering.Universal
             m_ColorGradingLutPass = new ColorGradingLutPass(RenderPassEvent.BeforeRenderingOpaques, data.postProcessData);
             m_Render2DLightingPass = new Render2DLightingPass(data);
             m_PostProcessPass = new PostProcessPass(RenderPassEvent.BeforeRenderingPostProcessing, data.postProcessData);
-            //m_FinalPostProcessPass = new PostProcessPass(RenderPassEvent.AfterRenderingPostProcessing, data.postProcessData);
+            m_FinalPostProcessPass = new PostProcessPass(RenderPassEvent.AfterRenderingPostProcessing, data.postProcessData);
             m_FinalBlitPass = new FinalBlitPass(RenderPassEvent.AfterRendering, CoreUtils.CreateEngineMaterial(data.blitShader));
 
             m_AfterPostProcessColor.Init("_AfterPostProcessTexture");
@@ -55,18 +55,25 @@ namespace UnityEngine.Experimental.Rendering.Universal
                 m_ColorGradingLutPass.Setup(m_ColorGradingLut);
                 EnqueuePass(m_ColorGradingLutPass);
 
-                m_PostProcessPass.Setup(cameraData.cameraTargetDescriptor, m_ColorTargetHandle, m_AfterPostProcessColor, new RenderTargetHandle(), m_ColorGradingLut);
-                EnqueuePass(m_PostProcessPass);
-            }
-
-            if (useOffscreenColorTexture)
-            {
-                var blitSource = postProcessEnabled ? m_AfterPostProcessColor : m_ColorTargetHandle;
-
-                if (ppc != null)
-                    m_FinalBlitPass.Setup(cameraData.cameraTargetDescriptor, blitSource, ppc.useOffscreenRT, ppc.finalBlitPixelRect);
+                if (renderingData.cameraData.antialiasing == AntialiasingMode.FastApproximateAntialiasing)
+                {
+                    m_PostProcessPass.Setup(cameraData.cameraTargetDescriptor, m_ColorTargetHandle, m_AfterPostProcessColor, new RenderTargetHandle(), m_ColorGradingLut);
+                    EnqueuePass(m_PostProcessPass);
+                    m_FinalPostProcessPass.SetupFinalPass(m_AfterPostProcessColor);
+                    EnqueuePass(m_FinalPostProcessPass);
+                }
                 else
-                    m_FinalBlitPass.Setup(cameraData.cameraTargetDescriptor, blitSource);
+                {
+                    m_PostProcessPass.Setup(cameraData.cameraTargetDescriptor, m_ColorTargetHandle, RenderTargetHandle.CameraTarget, new RenderTargetHandle(), m_ColorGradingLut);
+                    EnqueuePass(m_PostProcessPass);
+                }
+            }
+            else if (useOffscreenColorTexture)
+            {
+                if (ppc != null)
+                    m_FinalBlitPass.Setup(cameraData.cameraTargetDescriptor, m_ColorTargetHandle, ppc.useOffscreenRT, ppc.finalBlitPixelRect);
+                else
+                    m_FinalBlitPass.Setup(cameraData.cameraTargetDescriptor, m_ColorTargetHandle);
 
                 EnqueuePass(m_FinalBlitPass);
             }
