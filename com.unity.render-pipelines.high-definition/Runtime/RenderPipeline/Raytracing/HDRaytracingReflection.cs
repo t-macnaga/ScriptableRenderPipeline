@@ -133,6 +133,7 @@ namespace UnityEngine.Rendering.HighDefinition
             // Camera data
             deferredParameters.width = hdCamera.actualWidth;
             deferredParameters.height = hdCamera.actualHeight;
+            deferredParameters.viewCount = hdCamera.viewCount;
             deferredParameters.fov = hdCamera.camera.fieldOfView;
 
             // Compute buffers

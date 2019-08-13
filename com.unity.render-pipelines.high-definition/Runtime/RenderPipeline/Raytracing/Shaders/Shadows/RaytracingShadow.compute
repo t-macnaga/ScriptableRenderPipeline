@@ -355,8 +355,10 @@ void RaytracingAreaShadowNewSample(uint2 groupThreadId : SV_GroupThreadID, uint2
 RW_TEXTURE2D_X(float, _RaytracedDirectionalShadowIntegration);
 
 [numthreads(RAYTRACING_SHADOW_TILE_SIZE, RAYTRACING_SHADOW_TILE_SIZE, 1)]
-void ClearShadowTexture(uint2 groupThreadId : SV_GroupThreadID, uint2 groupId : SV_GroupID)
+void ClearShadowTexture(uint3 dispatchThreadId : SV_DispatchThreadID, uint2 groupThreadId : SV_GroupThreadID, uint2 groupId : SV_GroupID)
 {
+    UNITY_STEREO_ASSIGN_COMPUTE_EYE_INDEX(dispatchThreadId.z);
+
     // Compute the pixel position to process
     uint2 currentCoord = groupId * RAYTRACING_SHADOW_TILE_SIZE + groupThreadId;
     _RaytracedDirectionalShadowIntegration[COORD_TEXTURE2D_X(currentCoord)] = 0.0;
@@ -366,8 +368,10 @@ float _DirectionalLightAngle;
 
 // Prepass that evaluates the data required for the ray tracing
 [numthreads(RAYTRACING_SHADOW_TILE_SIZE, RAYTRACING_SHADOW_TILE_SIZE, 1)]
-void RaytracingDirectionalShadowSample(uint2 groupThreadId : SV_GroupThreadID, uint2 groupId : SV_GroupID)
+void RaytracingDirectionalShadowSample(uint3 dispatchThreadId : SV_DispatchThreadID, uint2 groupThreadId : SV_GroupThreadID, uint2 groupId : SV_GroupID)
 {
+    UNITY_STEREO_ASSIGN_COMPUTE_EYE_INDEX(dispatchThreadId.z);
+
     // Compute the pixel position to process
     uint2 currentCoord = groupId * RAYTRACING_SHADOW_TILE_SIZE + groupThreadId;
 
@@ -411,9 +415,15 @@ void RaytracingDirectionalShadowSample(uint2 groupThreadId : SV_GroupThreadID, u
 int _RaytracingShadowSlot;
 
 [numthreads(RAYTRACING_SHADOW_TILE_SIZE, RAYTRACING_SHADOW_TILE_SIZE, 1)]
-void OutputShadowTexture(uint2 groupThreadId : SV_GroupThreadID, uint2 groupId : SV_GroupID)
+void OutputShadowTexture(uint3 dispatchThreadId : SV_DispatchThreadID, uint2 groupThreadId : SV_GroupThreadID, uint2 groupId : SV_GroupID)
 {
+    UNITY_STEREO_ASSIGN_COMPUTE_EYE_INDEX(dispatchThreadId.z);
+
     // Compute the pixel position to process
     uint2 currentCoord = groupId * RAYTRACING_SHADOW_TILE_SIZE + groupThreadId;
-    _ScreenSpaceShadowsTextureRW[uint3(currentCoord, _RaytracingShadowSlot)] = _RaytracedDirectionalShadowIntegration[COORD_TEXTURE2D_X(currentCoord)].x / (float) _RaytracingNumSamples;
+
+    // Offset shadow slot based on XR setup
+    uint shadowSlot = INDEX_TEXTURE2D_ARRAY_X(_RaytracingShadowSlot);
+
+    _ScreenSpaceShadowsTextureRW[uint3(currentCoord, shadowSlot)] = _RaytracedDirectionalShadowIntegration[COORD_TEXTURE2D_X(currentCoord)].x / (float) _RaytracingNumSamples;
 }

@@ -6,6 +6,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [7.1.1] - 2019-XX-XX
 
+### Added
+- Ray tracing support for VR (AO, GI and directional shadows)
+
 ### Fixed
 - Fixed wizard infinite loop on cancellation
 - Fixed with compute shader error about too many threads in threadgroup on low GPU

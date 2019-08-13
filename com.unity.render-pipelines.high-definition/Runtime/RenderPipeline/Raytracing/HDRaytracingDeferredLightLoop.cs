@@ -21,6 +21,7 @@ namespace UnityEngine.Rendering.HighDefinition
             // Camera data
             public int width;
             public int height;
+            public int viewCount;
             public float fov;
 
             // Compute buffers

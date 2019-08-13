@@ -132,7 +132,7 @@ namespace UnityEngine.Rendering.HighDefinition
                     int shadowComputeKernel = shadowsCompute.FindKernel("ClearShadowTexture");
                     cmd.SetComputeBufferParam(shadowsCompute, shadowComputeKernel, HDShaderIDs._LightDatas, m_LightLoopLightData.lightData);
                     cmd.SetComputeTextureParam(shadowsCompute, shadowComputeKernel, HDShaderIDs._RaytracedDirectionalShadowIntegration, m_DenoiseBuffer0);
-                    cmd.DispatchCompute(shadowsCompute, shadowComputeKernel, numTilesX, numTilesY, 1);
+                    cmd.DispatchCompute(shadowsCompute, shadowComputeKernel, numTilesX, numTilesY, hdCamera.viewCount);
 
                     cmd.SetGlobalTexture(HDShaderIDs._OwenScrambledRGTexture, m_Asset.renderPipelineResources.textures.owenScrambledRGBATex);
                     cmd.SetGlobalTexture(HDShaderIDs._OwenScrambledTexture, m_Asset.renderPipelineResources.textures.owenScrambled256Tex);
@@ -156,7 +156,7 @@ namespace UnityEngine.Rendering.HighDefinition
                         cmd.SetComputeTextureParam(shadowsCompute, shadowComputeKernel, HDShaderIDs._RaytracingDirectionBuffer, m_RaytracingDirectionBuffer);
                         cmd.SetComputeFloatParam(shadowsCompute, HDShaderIDs._DirectionalLightAngle, m_CurrentSunLightAdditionalLightData.sunLightConeAngle);
 
-                        cmd.DispatchCompute(shadowsCompute, shadowComputeKernel, numTilesX, numTilesY, 1);
+                        cmd.DispatchCompute(shadowsCompute, shadowComputeKernel, numTilesX, numTilesY, hdCamera.viewCount);
 
                         // Grab the acceleration structure for the target camera
                         RayTracingAccelerationStructure accelerationStructure = m_RayTracingManager.RequestAccelerationStructure(rtEnvironment.shadowLayerMask);
@@ -174,7 +174,7 @@ namespace UnityEngine.Rendering.HighDefinition
                         cmd.SetRayTracingTextureParam(shadowRayTrace, HDShaderIDs._RaytracingDirectionBuffer, m_RaytracingDirectionBuffer);
                         cmd.SetRayTracingFloatParam(shadowRayTrace, HDShaderIDs._DirectionalLightAngle, m_CurrentSunLightAdditionalLightData.sunLightConeAngle);
                         cmd.SetRayTracingIntParam(shadowRayTrace, HDShaderIDs._RaytracingNumSamples, 1);
-                        cmd.DispatchRays(shadowRayTrace, m_RayGenDirectionalShadowSingleName, (uint)hdCamera.actualWidth, (uint)hdCamera.actualHeight, 1);
+                        cmd.DispatchRays(shadowRayTrace, m_RayGenDirectionalShadowSingleName, (uint)hdCamera.actualWidth, (uint)hdCamera.actualHeight, (uint)hdCamera.viewCount);
                     }
 
                     RTHandle shadowHistoryArray = hdCamera.GetCurrentFrameRT((int)HDCameraFrameHistoryType.RaytracedShadow)
@@ -195,7 +195,7 @@ namespace UnityEngine.Rendering.HighDefinition
                     cmd.SetComputeTextureParam(shadowsCompute, shadowComputeKernel, HDShaderIDs._RaytracedDirectionalShadowIntegration, m_DenoiseBuffer1);
                     cmd.SetComputeTextureParam(shadowsCompute, shadowComputeKernel, HDShaderIDs._ScreenSpaceShadowsTextureRW, m_ScreenSpaceShadowTextureArray);
                     cmd.SetComputeIntParam(shadowsCompute, HDShaderIDs._RaytracingShadowSlot, m_CurrentSunLightDirectionalLightData.screenSpaceShadowIndex);
-                    cmd.DispatchCompute(shadowsCompute, shadowComputeKernel, numTilesX, numTilesY, 1);
+                    cmd.DispatchCompute(shadowsCompute, shadowComputeKernel, numTilesX, numTilesY, hdCamera.viewCount);
                 }
                 else
 #endif
@@ -481,7 +481,7 @@ namespace UnityEngine.Rendering.HighDefinition
                     cmd.SetComputeIntParam(shadowFilter, HDShaderIDs._RaytracingShadowSlot, (int)hdrp.m_CurrentDebugDisplaySettings.data.screenSpaceShadowIndex);
                     cmd.SetComputeTextureParam(shadowFilter, targetKernel, HDShaderIDs._ScreenSpaceShadowsTextureRW, m_ScreenSpaceShadowTextureArray);
                     cmd.SetComputeTextureParam(shadowFilter, targetKernel, HDShaderIDs._DenoiseOutputTextureRW, m_DenoiseBuffer0);
-                    cmd.DispatchCompute(shadowFilter, targetKernel, numTilesX, numTilesY, 1);
+                    cmd.DispatchCompute(shadowFilter, targetKernel, numTilesX, numTilesY, hdCamera.viewCount);
                 }
 
                 // Push the full screen debug texture
