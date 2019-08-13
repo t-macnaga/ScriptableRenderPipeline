@@ -318,25 +318,25 @@ namespace UnityEditor.Rendering.Universal
                 case LightType.Spot:
                     using (new Handles.DrawingScope(Matrix4x4.TRS(light.transform.position, light.transform.rotation, Vector3.one)))
                     {
-                        CoreLightEditorUtilities.DrawSpotlightWireFrameWithZTest(light, default);
+                        CoreLightEditorUtilities.DrawSpotLightGizmo(light, default);
                     }
                     break;
 
                 case LightType.Point:
-                    CoreLightEditorUtilities.DrawPointLightWireFrameWithZTest(light);
+                    CoreLightEditorUtilities.DrawPointLightGizmo(light);
                     break;
 
                 case LightType.Rectangle:
                     using (new Handles.DrawingScope(Matrix4x4.TRS(light.transform.position, light.transform.rotation, Vector3.one)))
                     {
-                        CoreLightEditorUtilities.DrawRectangleLightWireFrameWithZTest(light);
+                        CoreLightEditorUtilities.DrawRectangleLightGizmo(light);
                     }
                     break;
 
                 case LightType.Disc:
                     using (new Handles.DrawingScope(Matrix4x4.TRS(light.transform.position, light.transform.rotation, Vector3.one)))
                     {
-                        CoreLightEditorUtilities.DrawDiscLightWireFrameWithZTest(light);
+                        CoreLightEditorUtilities.DrawDiscLightGizmo(light);
                     }
                     break;
 

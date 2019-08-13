@@ -19,9 +19,9 @@ namespace UnityEditor.Rendering
 
         static readonly int k_RadiusHandleHash = "RadiusHandleHash".GetHashCode();
 
-        public static void DrawPointLightWireFrameWithZTest(Light light)
+        public static void DrawPointLightGizmo(Light light)
         {
-            // Default Color for outer cone will be Yellow if nothing has been provided.
+            // Sets the color of the Gizmo.
             Color outerColor = GetLightAboveObjectWireframeColor(light.color);
 
             // Drawing the point light
@@ -88,7 +88,7 @@ namespace UnityEditor.Rendering
             }
         }
 
-        public static void DrawRectangleLightWireFrameWithZTest(Light light)
+        public static void DrawRectangleLightGizmo(Light light)
         {
             // Color to use for gizmo drawing
             Color outerColor = GetLightAboveObjectWireframeColor(light.color);
@@ -154,7 +154,7 @@ namespace UnityEditor.Rendering
             }
         }
 
-        public static void DrawDiscLightWireFrameWithZTest(Light light)
+        public static void DrawDiscLightGizmo(Light light)
         {
             // Color to use for gizmo drawing.
             Color outerColor = GetLightAboveObjectWireframeColor(light.color);
@@ -286,7 +286,7 @@ namespace UnityEditor.Rendering
         }
 
         static bool drawInnerConeAngle = false;
-        public static void DrawSpotlightWireFrameWithZTest(Light spotlight, Color? drawColorOuter = null, Color? drawColorInner = null)
+        public static void DrawSpotLightGizmo(Light spotlight, Color? drawColorOuter = null, Color? drawColorInner = null)
         {
             // Saving the default colors
             var defColor = Handles.color;
