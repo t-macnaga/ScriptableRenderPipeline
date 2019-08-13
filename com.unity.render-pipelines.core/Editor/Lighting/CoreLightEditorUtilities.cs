@@ -428,7 +428,7 @@ namespace UnityEditor.Rendering
            return RemapLightColor(CoreUtils.ConvertLinearToActiveColorSpace(color.linear));
         }
 
-        static Color GetLightBehindObjectWireframeColor(Color wireframeColor)
+        public static Color GetLightBehindObjectWireframeColor(Color wireframeColor)
         {
             Color color = wireframeColor;
             color.a = 0.2f;
@@ -694,6 +694,30 @@ namespace UnityEditor.Rendering
                 pos = newPos;
             }
             Gizmos.DrawLine(pos, lastPos);
+        }
+
+        public static Vector3 DrawSpotlightHandle(Vector3 outerAngleInnerAngleRange)
+        {
+            float outerAngle = outerAngleInnerAngleRange.x;
+            float innerAngle = outerAngleInnerAngleRange.y;
+            float range = outerAngleInnerAngleRange.z;
+
+            if (innerAngle > 0f)
+            {
+                innerAngle = SizeSliderSpotAngle(Vector3.zero, Vector3.forward, Vector3.right, range, innerAngle, String.Empty);
+                innerAngle = SizeSliderSpotAngle(Vector3.zero, Vector3.forward, Vector3.left, range, innerAngle, String.Empty);
+                innerAngle = SizeSliderSpotAngle(Vector3.zero, Vector3.forward, Vector3.up, range, innerAngle, String.Empty);
+                innerAngle = SizeSliderSpotAngle(Vector3.zero, Vector3.forward, Vector3.down, range, innerAngle, String.Empty);
+            }
+
+            outerAngle = SizeSliderSpotAngle(Vector3.zero, Vector3.forward, Vector3.right, range, outerAngle, String.Empty);
+            outerAngle = SizeSliderSpotAngle(Vector3.zero, Vector3.forward, Vector3.left, range, outerAngle, String.Empty);
+            outerAngle = SizeSliderSpotAngle(Vector3.zero, Vector3.forward, Vector3.up, range, outerAngle, String.Empty);
+            outerAngle = SizeSliderSpotAngle(Vector3.zero, Vector3.forward, Vector3.down, range, outerAngle, String.Empty);
+
+            range = SliderLineHandle(Vector3.zero, Vector3.forward, range);
+
+            return new Vector3(outerAngle, innerAngle, range);
         }
 
         public static void DrawSpotlightWireframe(Vector3 outerAngleInnerAngleRange, float shadowPlaneDistance = -1f)
