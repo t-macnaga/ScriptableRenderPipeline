@@ -20,9 +20,9 @@ projects:
   - name: HDRP
     folder: HDRP_Tests
     packagename: com.unity.render-pipelines.high-definition
-  - name: HDRP_DebugCrossFade_Tests
-    folder: HDRP_DebugCrossFade_Tests
-    packagename: none
+# - name: HDRP_DebugCrossFade_Tests
+#   folder: HDRP_DebugCrossFade_Tests
+#   packagename: none
 ---
 {% for project in projects %}
 {% for editor in editors %}
