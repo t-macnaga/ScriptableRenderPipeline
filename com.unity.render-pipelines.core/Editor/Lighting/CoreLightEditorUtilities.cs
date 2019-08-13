@@ -19,6 +19,10 @@ namespace UnityEditor.Rendering
 
         static readonly int k_RadiusHandleHash = "RadiusHandleHash".GetHashCode();
 
+        /// <summary>
+        /// Draw a gizmo for a point light.
+        /// </summary>
+        /// <param name="light">The light that is used for this gizmo.</param>
         public static void DrawPointLightGizmo(Light light)
         {
             // Sets the color of the Gizmo.
@@ -88,6 +92,10 @@ namespace UnityEditor.Rendering
             }
         }
 
+        /// <summary>
+        /// Draw a gizmo for an area/rectangle light.
+        /// </summary>
+        /// <param name="light">The light that is used for this gizmo.</param>
         public static void DrawRectangleLightGizmo(Light light)
         {
             // Color to use for gizmo drawing
@@ -154,6 +162,10 @@ namespace UnityEditor.Rendering
             }
         }
 
+        /// <summary>
+        /// Draw a gizmo for a disc light.
+        /// </summary>
+        /// <param name="light">The light that is used for this gizmo.</param>
         public static void DrawDiscLightGizmo(Light light)
         {
             // Color to use for gizmo drawing.
@@ -286,31 +298,36 @@ namespace UnityEditor.Rendering
         }
 
         static bool drawInnerConeAngle = false;
-        public static void DrawSpotLightGizmo(Light spotlight, Color? drawColorOuter = null, Color? drawColorInner = null)
+
+        /// <summary>
+        /// Draw a gizmo for a spot light.
+        /// </summary>
+        /// <param name="light">The light that is used for this gizmo.</param>
+        public static void DrawSpotLightGizmo(Light light)
         {
             // Saving the default colors
             var defColor = Handles.color;
             var defZTest = Handles.zTest;
 
             // Default Color for outer cone will be Yellow if nothing has been provided.
-            Color outerColor = GetLightAboveObjectWireframeColor(drawColorOuter ?? spotlight.color);
+            Color outerColor = GetLightAboveObjectWireframeColor(light.color);
 
             // The default z-test outer color will be 20% opacity of the outer color
             Color outerColorZTest = GetLightBehindObjectWireframeColor(outerColor);
 
             // Default Color for inner cone will be Yellow-ish if nothing has been provided.
-            Color innerColor = GetLightInnerConeColor(drawColorInner ?? spotlight.color);
+            Color innerColor = GetLightInnerConeColor(light.color);
 
             // The default z-test outer color will be 20% opacity of the inner color
             Color innerColorZTest = GetLightBehindObjectWireframeColor(innerColor);
 
             // Drawing before objects
             Handles.zTest = CompareFunction.LessEqual;
-            DrawSpotlightWireframe(spotlight, outerColor, innerColor);
+            DrawSpotlightWireframe(light, outerColor, innerColor);
 
             // Drawing behind objects
             Handles.zTest = CompareFunction.Greater;
-            DrawSpotlightWireframe(spotlight, outerColorZTest, innerColorZTest);
+            DrawSpotlightWireframe(light, outerColorZTest, innerColorZTest);
 
             // Resets the compare function to always
             Handles.zTest = CompareFunction.Always;
@@ -318,7 +335,7 @@ namespace UnityEditor.Rendering
             // Draw handles
             if (!Event.current.alt)
             {
-                DrawHandlesAndLabels(spotlight, outerColor);
+                DrawHandlesAndLabels(light, outerColor);
             }
 
             // Resets the handle colors
@@ -326,7 +343,7 @@ namespace UnityEditor.Rendering
             Handles.zTest = defZTest;
         }
 
-        static void DrawHandlesAndLabels(Light spotlight, Color color)
+        static void DrawHandlesAndLabels(Light light, Color color)
         {
             // Zero position vector3
             Vector3 zeroPos = Vector3.zero;
@@ -338,13 +355,13 @@ namespace UnityEditor.Rendering
             Handles.color = color;
 
             // Draw Center Handle
-            float range = spotlight.range;
+            float range = light.range;
             var id = GUIUtility.GetControlID(FocusType.Passive);
             EditorGUI.BeginChangeCheck();
             range = SliderLineHandle(id, Vector3.zero, Vector3.forward, range, "Range: ");
             if (EditorGUI.EndChangeCheck())
             {
-                Undo.RecordObjects(new[] { spotlight }, "Undo range change.");
+                Undo.RecordObjects(new[] { light }, "Undo range change.");
             }
 
             // Draw outer handles
@@ -352,48 +369,48 @@ namespace UnityEditor.Rendering
             const string outerLabel = "Outer Angle: ";
 
             EditorGUI.BeginChangeCheck();
-            float outerAngle = DrawConeHandles(zeroPos, spotlight.spotAngle, range, DrawHandleDirections, outerLabel);
+            float outerAngle = DrawConeHandles(zeroPos, light.spotAngle, range, DrawHandleDirections, outerLabel);
             if (EditorGUI.EndChangeCheck())
             {
-                Undo.RecordObjects(new[] { spotlight }, "Undo outer angle change.");
+                Undo.RecordObjects(new[] { light }, "Undo outer angle change.");
             }
 
             // Draw inner handles
             // Commented until inner angle will bake
             float innerAngle = 0;
             const string innerLabel = "Inner Angle: ";
-            if (spotlight.innerSpotAngle > 0f && drawInnerConeAngle)
+            if (light.innerSpotAngle > 0f && drawInnerConeAngle)
             {
                 DrawHandleDirections = HandleDirections.Left | HandleDirections.Right;
                 EditorGUI.BeginChangeCheck();
-                innerAngle = DrawConeHandles(zeroPos, spotlight.innerSpotAngle, range, DrawHandleDirections, innerLabel);
+                innerAngle = DrawConeHandles(zeroPos, light.innerSpotAngle, range, DrawHandleDirections, innerLabel);
                 if (EditorGUI.EndChangeCheck())
                 {
-                    Undo.RecordObjects(new[] { spotlight }, "Undo inner angle change.");
+                    Undo.RecordObjects(new[] { light }, "Undo inner angle change.");
                 }
             }
 
             // Draw Near Plane Handle
-            float nearPlaneRange = spotlight.shadowNearPlane;
-            if(spotlight.shadows != LightShadows.None && spotlight.lightmapBakeType != LightmapBakeType.Baked)
+            float nearPlaneRange = light.shadowNearPlane;
+            if(light.shadows != LightShadows.None && light.lightmapBakeType != LightmapBakeType.Baked)
             {
                 EditorGUI.BeginChangeCheck();
                 nearPlaneRange = SliderLineHandle(GUIUtility.GetControlID(FocusType.Passive), Vector3.zero, Vector3.forward, nearPlaneRange, "Near Plane: ");
                 if (EditorGUI.EndChangeCheck())
                 {
-                    Undo.RecordObjects(new[] { spotlight }, "Undo shadow near plane change.");
-                    nearPlaneRange = Mathf.Clamp(nearPlaneRange, 0.1f, spotlight.range);
+                    Undo.RecordObjects(new[] { light }, "Undo shadow near plane change.");
+                    nearPlaneRange = Mathf.Clamp(nearPlaneRange, 0.1f, light.range);
                 }
             }
 
             // If changes has been made we update the corresponding property
             if (GUI.changed)
             {
-                spotlight.spotAngle = outerAngle;
+                light.spotAngle = outerAngle;
                 // Commented until inner cone angle bakes
                 //spotlight.innerSpotAngle = innerAngle;
-                spotlight.range = Math.Max(range, 0.01f);
-                spotlight.shadowNearPlane = Mathf.Clamp(nearPlaneRange, 0.1f, spotlight.range);
+                light.range = Math.Max(range, 0.01f);
+                light.shadowNearPlane = Mathf.Clamp(nearPlaneRange, 0.1f, light.range);
             }
         }
 

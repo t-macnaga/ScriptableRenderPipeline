@@ -308,17 +308,17 @@ namespace UnityEditor.Rendering.Universal
 
         protected override void OnSceneGUI()
         {
-            Light light = target as Light;
-
-            if (!(GraphicsSettings.renderPipelineAsset is UniversalRenderPipelineAsset))
+            if (!(GraphicsSettings.currentRenderPipeline is UniversalRenderPipelineAsset))
                 return;
+
+            Light light = target as Light;
 
             switch (light.type)
             {
                 case LightType.Spot:
                     using (new Handles.DrawingScope(Matrix4x4.TRS(light.transform.position, light.transform.rotation, Vector3.one)))
                     {
-                        CoreLightEditorUtilities.DrawSpotLightGizmo(light, default);
+                        CoreLightEditorUtilities.DrawSpotLightGizmo(light);
                     }
                     break;
 
