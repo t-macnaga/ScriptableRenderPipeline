@@ -299,7 +299,8 @@ namespace UnityEditor.Graphing
                 return "NAN";
             else
             {
-                return value.ToString(s_FloatFormat, CultureInfo.InvariantCulture);
+                string d = value % 1 == 0 ? ".0" : string.Empty;
+                return $"{value.ToString(s_FloatFormat, CultureInfo.InvariantCulture)}{d}f";
             }
         }
     }
