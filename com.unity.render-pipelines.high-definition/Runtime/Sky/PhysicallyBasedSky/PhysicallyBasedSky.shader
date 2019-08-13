@@ -175,20 +175,22 @@ Shader "Hidden/HDRP/Sky/PbrSky"
         }
 
         skyColor += radiance * (1 - skyOpacity);
-        skyColor *= _IntensityMultiplier * GetCurrentExposureMultiplier(); // Same exposure for both baking and frame rendering
+        skyColor *= _IntensityMultiplier;
 
         return float4(skyColor, 1.0);
     }
 
     float4 FragBaking(Varyings input) : SV_Target
     {
-        return RenderSky(input);
+        return RenderSky(input); // The cube map is not pre-exposed
     }
 
     float4 FragRender(Varyings input) : SV_Target
     {
         UNITY_SETUP_STEREO_EYE_INDEX_POST_VERTEX(input);
-        return RenderSky(input);
+        float4 value = RenderSky(input);
+        value.rgb *= GetCurrentExposureMultiplier(); // Only the full-screen pass is pre-exposed
+        return value;
     }
 
     ENDHLSL
