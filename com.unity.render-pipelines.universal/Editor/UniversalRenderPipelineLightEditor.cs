@@ -134,7 +134,13 @@ namespace UnityEditor.Rendering.Universal
 
             using (var group = new EditorGUILayout.FadeGroupScope(1.0f - m_AnimAreaOptions.faded))
                 if (group.visible)
-                    settings.DrawLightmapping();
+                {
+                    Light light = target as Light;
+                    if (light.type != LightType.Disc)
+                    {
+                        settings.DrawLightmapping();
+                    }
+                }
 
             settings.DrawIntensity();
 
@@ -327,12 +333,12 @@ namespace UnityEditor.Rendering.Universal
                     }
                     break;
 
-//                case LightType.Disc:
-//                    using (new Handles.DrawingScope(Matrix4x4.TRS(light.transform.position, light.transform.rotation, Vector3.one)))
-//                    {
-//                        CoreLightEditorUtilities.DrawDiscLightWireFrameWithZTest(light);
-//                    }
-//                    break;
+                case LightType.Disc:
+                    using (new Handles.DrawingScope(Matrix4x4.TRS(light.transform.position, light.transform.rotation, Vector3.one)))
+                    {
+                        CoreLightEditorUtilities.DrawDiscLightWireFrameWithZTest(light);
+                    }
+                    break;
 
                 default:
                     base.OnSceneGUI();

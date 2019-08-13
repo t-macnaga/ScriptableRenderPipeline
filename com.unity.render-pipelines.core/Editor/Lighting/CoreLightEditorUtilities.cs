@@ -103,12 +103,15 @@ namespace UnityEditor.Rendering
         static void DrawRectangleLight(Light light, Color outerColor)
         {
             Vector2 size = light.areaSize;
+            var range = light.range;
+            var innerColor = GetLightBehindObjectWireframeColor(light.color);
+            DrawZTestedLine(range, outerColor, innerColor);
 
             using (new Handles.DrawingScope(outerColor))
             {
                 EditorGUI.BeginChangeCheck();
                 size = DoRectHandles(size);
-                Handles.DrawLine(Vector3.zero, Vector3.forward);
+
                 if (EditorGUI.EndChangeCheck())
                 {
                     Undo.RecordObject(light, "Adjust Area Rectangle Light");
@@ -166,12 +169,15 @@ namespace UnityEditor.Rendering
         static void DrawDiscLight(Light light, Color outerColor)
         {
             float radius = light.areaSize.x;
+            var range = light.range;
+            var innerColor = GetLightBehindObjectWireframeColor(light.color);
+            DrawZTestedLine(range, outerColor, innerColor);
 
             using (new Handles.DrawingScope(outerColor))
             {
                 EditorGUI.BeginChangeCheck();
                 radius = DoDiscHandles(radius);
-                Handles.DrawLine(Vector3.zero, Vector3.forward);
+
                 if (EditorGUI.EndChangeCheck())
                 {
                     Undo.RecordObject(light, "Adjust Area Disc Light");
@@ -187,7 +193,6 @@ namespace UnityEditor.Rendering
             if (Event.current.type != EventType.Repaint)
                 return;
 
-            // Adding label /////////////////////////////////////
             Vector3 labelPosition = Vector3.zero;
 
             if (GUIUtility.hotControl != 0)
@@ -231,6 +236,21 @@ namespace UnityEditor.Rendering
             handle.DrawHandle();
         }
 
+        static void DrawZTestedLine(float range, Color outerColor, Color innerColor)
+        {
+            using (new Handles.DrawingScope(outerColor))
+            {
+                Handles.zTest = CompareFunction.LessEqual;
+                Handles.DrawLine(Vector3.zero, Vector3.forward * range);
+            }
+            using (new Handles.DrawingScope(innerColor))
+            {
+                Handles.zTest = CompareFunction.Greater;
+                Handles.DrawLine(Vector3.zero, Vector3.forward * range);
+            }
+            Handles.zTest = CompareFunction.Always;
+        }
+
         static void DrawHandleLabel(Vector3 handlePosition, string labelText, float offsetFromHandle = 0.3f)
         {
             Vector3 labelPosition = Vector3.zero;
@@ -265,16 +285,7 @@ namespace UnityEditor.Rendering
             return s_DiscLightHandle.radius;
         }
 
-        static Color HandleColor()
-        {
-            // Give handles twice the alpha of the lines
-            Color color = Handles.color;
-            color.a = Mathf.Clamp01(Handles.color.a * 2);
-            color = RemapLightColor(CoreUtils.ConvertSRGBToActiveColorSpace(color));
-            return color;
-        }
-
-        static bool drawInnerConeAngle = true;
+        static bool drawInnerConeAngle = false;
         public static void DrawSpotlightWireFrameWithZTest(Light spotlight, Color? drawColorOuter = null, Color? drawColorInner = null)
         {
             // Saving the default colors
@@ -283,7 +294,6 @@ namespace UnityEditor.Rendering
 
             // Default Color for outer cone will be Yellow if nothing has been provided.
             Color outerColor = GetLightAboveObjectWireframeColor(drawColorOuter ?? spotlight.color);
-
 
             // The default z-test outer color will be 20% opacity of the outer color
             Color outerColorZTest = GetLightBehindObjectWireframeColor(outerColor);
@@ -381,7 +391,7 @@ namespace UnityEditor.Rendering
             {
                 spotlight.spotAngle = outerAngle;
                 // Commented until inner cone angle bakes
-                spotlight.innerSpotAngle = innerAngle;
+                //spotlight.innerSpotAngle = innerAngle;
                 spotlight.range = Math.Max(range, 0.01f);
                 spotlight.shadowNearPlane = Mathf.Clamp(nearPlaneRange, 0.1f, spotlight.range);
             }
@@ -391,27 +401,27 @@ namespace UnityEditor.Rendering
         {
             Color color = wireframeColor;
             color.a = 0.4f;
-            return RemapLightColor(CoreUtils.ConvertSRGBToActiveColorSpace(color));
+            return RemapLightColor(CoreUtils.ConvertLinearToActiveColorSpace(color.linear));
         }
 
         static Color GetLightAboveObjectWireframeColor(Color wireframeColor)
         {
             Color color = wireframeColor;
             color.a = 1f;
-            return RemapLightColor(CoreUtils.ConvertSRGBToActiveColorSpace(color));
+           return RemapLightColor(CoreUtils.ConvertLinearToActiveColorSpace(color.linear));
         }
 
         static Color GetLightBehindObjectWireframeColor(Color wireframeColor)
         {
             Color color = wireframeColor;
             color.a = 0.2f;
-            return RemapLightColor(CoreUtils.ConvertSRGBToActiveColorSpace(color));
+            return RemapLightColor(CoreUtils.ConvertLinearToActiveColorSpace(color.linear));
         }
 
         static Color RemapLightColor(Color src)
         {
             Color color = src;
-            float max = Mathf.Max(color.r, color.g);
+            float max = Mathf.Max( Mathf.Max(color.r, color.g), color.b);
             if (max > 0f)
             {
                 float mult = 1f / max;

@@ -239,7 +239,7 @@ namespace UnityEngine.Rendering.Universal
             int msaaSamples = 1;
             if (camera.allowMSAA && settings.msaaSampleCount > 1)
                 msaaSamples = (camera.targetTexture != null) ? camera.targetTexture.antiAliasing : settings.msaaSampleCount;
-            
+
             cameraData.isSceneViewCamera = camera.cameraType == CameraType.SceneView;
             cameraData.isHdrEnabled = camera.allowHDR && settings.supportsHDR;
             cameraData.postProcessEnabled = CoreUtils.ArePostProcessesEnabled(camera)
@@ -265,7 +265,7 @@ namespace UnityEngine.Rendering.Universal
 
             bool anyShadowsEnabled = settings.supportsMainLightShadows || settings.supportsAdditionalLightShadows;
             cameraData.maxShadowDistance = (anyShadowsEnabled) ? settings.shadowDistance : 0.0f;
-            
+
             if (additionalCameraData != null)
             {
                 cameraData.maxShadowDistance = (additionalCameraData.renderShadows) ? cameraData.maxShadowDistance : 0.0f;
@@ -563,6 +563,12 @@ namespace UnityEngine.Rendering.Universal
                     case LightType.Area:
                         RectangleLight rectangleLight = new RectangleLight();
                         LightmapperUtils.Extract(light, ref rectangleLight); lightData.Init(ref rectangleLight);
+                        light.lightmapBakeType = LightmapBakeType.Baked;
+                        break;
+                    case LightType.Disc:
+                        DiscLight discLight = new DiscLight();
+                        LightmapperUtils.Extract(light, ref discLight); lightData.Init(ref discLight);
+                        light.lightmapBakeType = LightmapBakeType.Baked;
                         break;
                     default:
                         lightData.InitNoBake(light.GetInstanceID());
