@@ -116,6 +116,10 @@ namespace UnityEngine.Experimental.Rendering.Universal
             m_ShadowShader = Shader.Find("Hidden/Shadow2D");
             m_ShadowGroupShader = Shader.Find("Hidden/ShadowGroup2D");
             m_RemoveSelfShadowShader = Shader.Find("Hidden/Shadow2DRemoveSelf");
+
+            #if UNITY_EDITOR
+            m_Renderer2DDataInstance = this;
+            #endif
         }
 
         protected override void OnEnable()
