@@ -87,7 +87,7 @@ namespace UnityEditor.Rendering
                         return;
                 }
 
-                string labelText = $"Range: {light.range:0.##}";
+                string labelText = FormattableString.Invariant($"Range: {light.range:0.00}");
                 DrawHandleLabel(labelPosition, labelText);
             }
         }
@@ -157,7 +157,7 @@ namespace UnityEditor.Rendering
                     default:
                         return;
                 }
-                string labelText = $"w:{light.areaSize.x:0.##} x h:{light.areaSize.y:0.##}";
+                string labelText = FormattableString.Invariant($"w:{light.areaSize.x:0.00} x h:{light.areaSize.y:0.00}");
                 DrawHandleLabel(labelPosition, labelText);
             }
         }
@@ -226,7 +226,7 @@ namespace UnityEditor.Rendering
                     default:
                         return;
                 }
-                string labelText = $"Diameter: {light.areaSize.x:0.##}";
+                string labelText = FormattableString.Invariant($"Diameter: {light.areaSize.x:0.00}");
                 DrawHandleLabel(labelPosition, labelText);
             }
         }
@@ -603,7 +603,7 @@ namespace UnityEditor.Rendering
 
             if (GUIUtility.hotControl == id && !String.IsNullOrEmpty(labelText))
             {
-                labelText += $"{value:0.##}";
+                labelText += FormattableString.Invariant($"{value:0.00}");
                 DrawHandleLabel(pos, labelText);
             }
 
@@ -656,7 +656,7 @@ namespace UnityEditor.Rendering
             if (GUIUtility.hotControl == id)
             {
                 var pos = handlePosition + centerToLeftOnSphere.normalized * newMagnitude;
-                string labelText = $"{controlName} {spotAngle:0.##}";
+                string labelText = FormattableString.Invariant($"{controlName} {spotAngle:0.00}");
                 DrawHandleLabel(pos, labelText);
             }
 
