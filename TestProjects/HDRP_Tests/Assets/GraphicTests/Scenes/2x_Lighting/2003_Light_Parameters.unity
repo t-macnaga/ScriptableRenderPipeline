@@ -15956,6 +15956,10 @@ PrefabInstance:
       propertyPath: m_Enabled
       value: 1
       objectReference: {fileID: 0}
+    - target: {fileID: 1132393308280272, guid: c07ace9ab142ca9469fa377877c2f1e7, type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: c07ace9ab142ca9469fa377877c2f1e7, type: 3}
 --- !u!20 &1243127723 stripped
@@ -24607,7 +24611,7 @@ MonoBehaviour:
   areaIntensity: 200
   lightLayers: 1
   m_Intensity: 60
-  m_EnableSpotReflector: 0
+  m_EnableSpotReflector: 1
   m_LuxAtDistance: 1
   m_InnerSpotPercent: 0
   m_LightDimmer: 1
@@ -24687,7 +24691,7 @@ Light:
   m_Type: 0
   m_Shape: 0
   m_Color: {r: 1, g: 1, b: 1, a: 1}
-  m_Intensity: 4.774648
+  m_Intensity: 280.25015
   m_Range: 10
   m_SpotAngle: 30
   m_InnerSpotAngle: 21.80208
