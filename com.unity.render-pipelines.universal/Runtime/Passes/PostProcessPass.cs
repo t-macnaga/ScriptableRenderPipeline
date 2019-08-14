@@ -310,7 +310,10 @@ namespace UnityEngine.Rendering.Universal
                 {
                     cmd.SetRenderTarget(m_Destination.Identifier());
                     cmd.SetViewProjectionMatrices(Matrix4x4.identity, Matrix4x4.identity);
-                    cmd.SetViewport(cameraData.camera.pixelRect);
+
+                    if (m_Destination == RenderTargetHandle.CameraTarget)
+                        cmd.SetViewport(cameraData.camera.pixelRect);
+
                     cmd.DrawMesh(RenderingUtils.fullscreenMesh, Matrix4x4.identity, m_Materials.uber);
                     cmd.SetViewProjectionMatrices(cameraData.camera.worldToCameraMatrix, cameraData.camera.projectionMatrix);
                 }
