@@ -226,7 +226,7 @@ namespace UnityEditor.Rendering
                     default:
                         return;
                 }
-                string labelText = $"Diameter :{light.areaSize.x:0.##}";
+                string labelText = $"Diameter: {light.areaSize.x:0.##}";
                 DrawHandleLabel(labelPosition, labelText);
             }
         }
