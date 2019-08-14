@@ -579,9 +579,10 @@ namespace UnityEditor.Experimental.Rendering.Universal
                 return;
             }
 
-            UniversalRenderPipelineAsset asset = UniversalRenderPipeline.asset;
-            Renderer2DData assetData = asset.scriptableRendererData as Renderer2DData;
-            if(assetData == null)
+            //UniversalRenderPipelineAsset asset = UniversalRenderPipeline.asset;
+            //Renderer2DData assetData = asset.scriptableRendererData as Renderer2DData;
+            Renderer2DData assetData = Renderer2DData.m_Renderer2DDataInstance;
+            if (assetData == null)
             {
                 EditorGUILayout.HelpBox(Styles.asset2DUnassignedWarning);
                 return;

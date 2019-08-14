@@ -177,9 +177,7 @@ namespace UnityEditor.Experimental.Rendering.Universal
                 }
             }
 
-            // We need to fix this so we can control the adding. There are a maximum of 255 groups allowed.
-            EditorGUILayout.PropertyField(m_ShadowGroups, Styles.shadowGroups);
-
+            
             EditorGUI.indentLevel--;
             m_WasModified |= serializedObject.hasModifiedProperties;
             serializedObject.ApplyModifiedProperties();

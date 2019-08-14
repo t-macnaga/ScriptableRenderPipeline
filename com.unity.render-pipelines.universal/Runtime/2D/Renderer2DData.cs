@@ -44,6 +44,12 @@ namespace UnityEngine.Experimental.Rendering.Universal
         [SerializeField]
         Shader m_RemoveSelfShadowShader = null;
 
+
+        #if UNITY_EDITOR
+        internal static Renderer2DData m_Renderer2DDataInstance = null;
+        #endif
+
+
         public float hdrEmulationScale => m_HDREmulationScale;
         public Light2DBlendStyle[] lightBlendStyles => m_LightBlendStyles;
 
@@ -115,6 +121,10 @@ namespace UnityEngine.Experimental.Rendering.Universal
         protected override void OnEnable()
         {
             base.OnEnable();
+
+            #if UNITY_EDITOR
+            m_Renderer2DDataInstance = this;
+            #endif
 
             // Provide a list of suggested texture property names to Sprite Editor via EditorPrefs.
             const string suggestedNamesKey = "SecondarySpriteTexturePropertyNames";
