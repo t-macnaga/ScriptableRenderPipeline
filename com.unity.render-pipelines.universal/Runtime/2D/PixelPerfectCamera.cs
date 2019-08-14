@@ -116,17 +116,6 @@ namespace UnityEngine.Experimental.Rendering.Universal
             }
         }
 
-        internal Rect finalBlitPixelRect
-        {
-            get
-            {
-                if (!isRunning || !m_Internal.useOffscreenRT)
-                    return Rect.zero;
-                else
-                    return m_Internal.CalculateFinalBlitPixelRect(m_Camera.aspect, Screen.width, Screen.height);
-            }
-        }
-
         internal bool useOffscreenRT
         {
             get
@@ -135,6 +124,17 @@ namespace UnityEngine.Experimental.Rendering.Universal
                     return false;
                 else
                     return m_Internal.useOffscreenRT;
+            }
+        }
+
+        internal Vector2Int offscreenRTSize
+        {
+            get
+            {
+                if (!isRunning)
+                    return Vector2Int.zero;
+                else
+                    return new Vector2Int(m_Internal.offscreenRTWidth, m_Internal.offscreenRTHeight);
             }
         }
 
@@ -170,8 +170,8 @@ namespace UnityEngine.Experimental.Rendering.Universal
 
             PixelSnap();
 
-            if (m_Internal.pixelRect != Rect.zero)
-                m_Camera.pixelRect = m_Internal.pixelRect;
+            if (m_Internal.useOffscreenRT)
+                m_Camera.pixelRect = m_Internal.CalculateFinalBlitPixelRect(m_Camera.aspect, Screen.width, Screen.height);
             else
                 m_Camera.rect = new Rect(0.0f, 0.0f, 1.0f, 1.0f);
 

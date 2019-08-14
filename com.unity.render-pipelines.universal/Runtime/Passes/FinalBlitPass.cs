@@ -15,7 +15,6 @@ namespace UnityEngine.Rendering.Universal
         TextureDimension m_TargetDimension;
         bool m_ClearBlitTarget;
         bool m_IsMobileOrSwitch;
-        Rect m_PixelRect;
 
         public FinalBlitPass(RenderPassEvent evt, Material blitMaterial)
         {
@@ -36,7 +35,6 @@ namespace UnityEngine.Rendering.Universal
             m_TargetDimension = baseDescriptor.dimension;
             m_ClearBlitTarget = clearBlitTarget;
             m_IsMobileOrSwitch = Application.isMobilePlatform || Application.platform == RuntimePlatform.Switch;
-            m_PixelRect = pixelRect;
         }
 
         /// <inheritdoc/>
@@ -91,7 +89,7 @@ namespace UnityEngine.Rendering.Universal
 
                 Camera camera = cameraData.camera;
                 cmd.SetViewProjectionMatrices(Matrix4x4.identity, Matrix4x4.identity);
-                cmd.SetViewport(m_PixelRect != Rect.zero ? m_PixelRect : cameraData.camera.pixelRect);
+                cmd.SetViewport(cameraData.camera.pixelRect);
                 cmd.DrawMesh(RenderingUtils.fullscreenMesh, Matrix4x4.identity, blitMaterial);
                 cmd.SetViewProjectionMatrices(camera.worldToCameraMatrix, camera.projectionMatrix);
             }

@@ -39,6 +39,12 @@ namespace UnityEngine.Experimental.Rendering.Universal
             bool postProcessEnabled = renderingData.cameraData.postProcessEnabled;
             bool useOffscreenColorTexture = (ppc != null && ppc.useOffscreenRT) || postProcessEnabled || cameraData.isHdrEnabled || cameraData.isSceneViewCamera || !cameraData.isDefaultViewport;
 
+            if (ppc != null && ppc.useOffscreenRT)
+            {
+                cameraData.cameraTargetDescriptor.width = ppc.offscreenRTSize.x;
+                cameraData.cameraTargetDescriptor.height = ppc.offscreenRTSize.y;
+            }
+
             if (useOffscreenColorTexture)
             {
                 var filterMode = ppc != null ? ppc.finalBlitFilterMode : FilterMode.Bilinear;
@@ -71,7 +77,7 @@ namespace UnityEngine.Experimental.Rendering.Universal
             else if (useOffscreenColorTexture)
             {
                 if (ppc != null)
-                    m_FinalBlitPass.Setup(cameraData.cameraTargetDescriptor, m_ColorTargetHandle, ppc.useOffscreenRT, ppc.finalBlitPixelRect);
+                    m_FinalBlitPass.Setup(cameraData.cameraTargetDescriptor, m_ColorTargetHandle, ppc.useOffscreenRT);
                 else
                     m_FinalBlitPass.Setup(cameraData.cameraTargetDescriptor, m_ColorTargetHandle);
 
