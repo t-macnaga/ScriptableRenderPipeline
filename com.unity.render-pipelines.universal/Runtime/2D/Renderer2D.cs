@@ -92,11 +92,7 @@ namespace UnityEngine.Experimental.Rendering.Universal
 
             if (requireFinalBlitPass)
             {
-                if (ppc != null)
-                    m_FinalBlitPass.Setup(cameraData.cameraTargetDescriptor, finalBlitSourceHandle, ppc.useOffscreenRT);
-                else
-                    m_FinalBlitPass.Setup(cameraData.cameraTargetDescriptor, finalBlitSourceHandle);
-
+                m_FinalBlitPass.Setup(cameraData.cameraTargetDescriptor, finalBlitSourceHandle);
                 EnqueuePass(m_FinalBlitPass);
             }
         }

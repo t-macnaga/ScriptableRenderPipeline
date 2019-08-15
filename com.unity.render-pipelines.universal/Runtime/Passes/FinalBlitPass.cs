@@ -13,7 +13,6 @@ namespace UnityEngine.Rendering.Universal
         RenderTargetHandle m_Source;
         Material m_BlitMaterial;
         TextureDimension m_TargetDimension;
-        bool m_ClearBlitTarget;
         bool m_IsMobileOrSwitch;
 
         public FinalBlitPass(RenderPassEvent evt, Material blitMaterial)
@@ -33,7 +32,6 @@ namespace UnityEngine.Rendering.Universal
         {
             m_Source = colorHandle;
             m_TargetDimension = baseDescriptor.dimension;
-            m_ClearBlitTarget = clearBlitTarget;
             m_IsMobileOrSwitch = Application.isMobilePlatform || Application.platform == RuntimePlatform.Switch;
         }
 
@@ -81,9 +79,9 @@ namespace UnityEngine.Rendering.Universal
                 SetRenderTarget(
                     cmd,
                     BuiltinRenderTextureType.CameraTarget,
-                    m_ClearBlitTarget ? RenderBufferLoadAction.DontCare : RenderBufferLoadAction.Load,
+                    RenderBufferLoadAction.Load,
                     RenderBufferStoreAction.Store,
-                    m_ClearBlitTarget ? ClearFlag.Color : ClearFlag.None,
+                    ClearFlag.None,
                     Color.black,
                     m_TargetDimension);
 

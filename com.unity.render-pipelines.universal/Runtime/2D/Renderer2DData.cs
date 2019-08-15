@@ -34,7 +34,7 @@ namespace UnityEngine.Experimental.Rendering.Universal
         Shader m_BlitShader = null;
 
         [SerializeField]
-        PostProcessData m_PostProcessData;
+        PostProcessData m_PostProcessData = null;
 
         public float hdrEmulationScale => m_HDREmulationScale;
         public Light2DBlendStyle[] lightBlendStyles => m_LightBlendStyles;
