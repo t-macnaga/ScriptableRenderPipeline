@@ -56,30 +56,46 @@ namespace UnityEngine.Experimental.Rendering.Universal
             m_Render2DLightingPass.ConfigureTarget(m_ColorTargetHandle.Identifier());
             EnqueuePass(m_Render2DLightingPass);
 
+            bool requireFinalBlitPass = useOffscreenColorTexture;
+            var finalBlitSourceHandle = m_ColorTargetHandle;
+
             if (postProcessEnabled)
             {
                 m_ColorGradingLutPass.Setup(m_ColorGradingLut);
                 EnqueuePass(m_ColorGradingLutPass);
 
-                if (renderingData.cameraData.antialiasing == AntialiasingMode.FastApproximateAntialiasing)
+                if (ppc != null && ppc.upscaleRT && ppc.isRunning)
+                {
+                    m_PostProcessPass.Setup(cameraData.cameraTargetDescriptor, m_ColorTargetHandle, m_AfterPostProcessColor, new RenderTargetHandle(), m_ColorGradingLut);
+                    EnqueuePass(m_PostProcessPass);
+
+                    requireFinalBlitPass = true;
+                    finalBlitSourceHandle = m_AfterPostProcessColor;
+                }
+                else if (renderingData.cameraData.antialiasing == AntialiasingMode.FastApproximateAntialiasing)
                 {
                     m_PostProcessPass.Setup(cameraData.cameraTargetDescriptor, m_ColorTargetHandle, m_AfterPostProcessColor, new RenderTargetHandle(), m_ColorGradingLut);
                     EnqueuePass(m_PostProcessPass);
                     m_FinalPostProcessPass.SetupFinalPass(m_AfterPostProcessColor);
                     EnqueuePass(m_FinalPostProcessPass);
+
+                    requireFinalBlitPass = false;
                 }
                 else
                 {
                     m_PostProcessPass.Setup(cameraData.cameraTargetDescriptor, m_ColorTargetHandle, RenderTargetHandle.CameraTarget, new RenderTargetHandle(), m_ColorGradingLut);
                     EnqueuePass(m_PostProcessPass);
+
+                    requireFinalBlitPass = false;
                 }
             }
-            else if (useOffscreenColorTexture)
+
+            if (requireFinalBlitPass)
             {
                 if (ppc != null)
-                    m_FinalBlitPass.Setup(cameraData.cameraTargetDescriptor, m_ColorTargetHandle, ppc.useOffscreenRT);
+                    m_FinalBlitPass.Setup(cameraData.cameraTargetDescriptor, finalBlitSourceHandle, ppc.useOffscreenRT);
                 else
-                    m_FinalBlitPass.Setup(cameraData.cameraTargetDescriptor, m_ColorTargetHandle);
+                    m_FinalBlitPass.Setup(cameraData.cameraTargetDescriptor, finalBlitSourceHandle);
 
                 EnqueuePass(m_FinalBlitPass);
             }

@@ -93,7 +93,7 @@ namespace UnityEngine.Experimental.Rendering.Universal
         Camera m_Camera;
         PixelPerfectCameraInternal m_Internal;
 
-        bool isRunning
+        internal bool isRunning
         {
             get
             {
