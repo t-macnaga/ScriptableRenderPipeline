@@ -2,6 +2,7 @@ using System;
 using UnityEngine.Rendering.Universal;
 using UnityEngine.Scripting.APIUpdating;
 using UnityEngine.Serialization;
+using UnityEngine.Rendering;
 
 #if UNITY_EDITOR
 using UnityEditor;
@@ -10,7 +11,9 @@ using UnityEditor.ProjectWindowCallback;
 
 namespace UnityEngine.Experimental.Rendering.Universal
 {
-    [MovedFrom("UnityEngine.Experimental.Rendering.LWRP")] public class Renderer2DData : ScriptableRendererData
+    [Serializable, ReloadGroup]
+    [MovedFrom("UnityEngine.Experimental.Rendering.LWRP")]
+    public class Renderer2DData : ScriptableRendererData
     {
         [SerializeField]
         float m_HDREmulationScale = 1;
@@ -33,7 +36,7 @@ namespace UnityEngine.Experimental.Rendering.Universal
         [SerializeField]
         Shader m_BlitShader = null;
 
-        [SerializeField]
+        [SerializeField, Reload("Runtime/Data/PostProcessData.asset")]
         PostProcessData m_PostProcessData = null;
 
         public float hdrEmulationScale => m_HDREmulationScale;
@@ -48,6 +51,13 @@ namespace UnityEngine.Experimental.Rendering.Universal
 
         protected override ScriptableRenderer Create()
         {
+#if UNITY_EDITOR
+            if (!Application.isPlaying)
+            {
+                ResourceReloader.ReloadAllNullIn(this, UniversalRenderPipelineAsset.packagePath);
+                ResourceReloader.ReloadAllNullIn(m_PostProcessData, UniversalRenderPipelineAsset.packagePath);
+            }
+#endif
             return new Renderer2D(this);
         }
 
@@ -96,7 +106,6 @@ namespace UnityEngine.Experimental.Rendering.Universal
             m_PointLightShader = Shader.Find("Hidden/Light2D-Point");
             m_PointLightVolumeShader = Shader.Find("Hidden/Light2d-Point-Volumetric");
             m_BlitShader = Shader.Find("Hidden/Universal Render Pipeline/Blit");
-            m_PostProcessData = AssetDatabase.LoadAssetAtPath<PostProcessData>("Packages/com.unity.render-pipelines.universal/Runtime/Data/PostProcessData.asset");
         }
 
         protected override void OnEnable()
@@ -121,6 +130,16 @@ namespace UnityEngine.Experimental.Rendering.Universal
 
                 EditorPrefs.SetString(suggestedNamesKey, suggestedNamesPrefs);
             }
+
+#if UNITY_EDITOR
+            // Reload missing resources.
+            try
+            {
+                ResourceReloader.ReloadAllNullIn(this, UniversalRenderPipelineAsset.packagePath);
+                ResourceReloader.ReloadAllNullIn(m_PostProcessData, UniversalRenderPipelineAsset.packagePath);
+            }
+            catch { }
+#endif
         }
 
         internal override Material GetDefaultMaterial(DefaultMaterialType materialType)
