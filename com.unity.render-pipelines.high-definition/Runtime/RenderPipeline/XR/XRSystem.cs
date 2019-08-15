@@ -29,7 +29,7 @@ namespace UnityEngine.Rendering.HighDefinition
 
 #if ENABLE_XR_MODULE
         // XR SDK display interface
-        List<XRDisplaySubsystem> displayList = new List<XRDisplaySubsystem>();
+        static List<XRDisplaySubsystem> displayList = new List<XRDisplaySubsystem>();
         XRDisplaySubsystem display = null;
 
         // Internal resources used by XR rendering
@@ -52,6 +52,18 @@ namespace UnityEngine.Rendering.HighDefinition
             // XRTODO: replace by dynamic render graph
             TextureXR.maxViews = GetMaxViews();
         }
+
+#if ENABLE_XR_MODULE
+        // With XR SDK: disable legacy VR system before rendering first frame
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSplashScreen)]
+        internal static void XRSystemInit()
+        {
+            SubsystemManager.GetInstances(displayList);
+
+            for (int i = 0; i < displayList.Count; i++)
+                displayList[i].disableLegacyRenderer = true;
+        }
+#endif
 
         // Compute the maximum number of views (slices) to allocate for texture arrays
         internal int GetMaxViews()
@@ -87,8 +99,11 @@ namespace UnityEngine.Rendering.HighDefinition
         {
             bool xrSdkActive = RefreshXrSdk();
 
-            // Validate state
-            Debug.Assert(framePasses.Count == 0, "XRSystem.ReleaseFrame() was not called!");
+            if (framePasses.Count > 0)
+            {
+                Debug.LogWarning("XRSystem.ReleaseFrame() was not called!");
+                ReleaseFrame();
+            }
 
             foreach (var camera in cameras)
             {
@@ -108,6 +123,11 @@ namespace UnityEngine.Rendering.HighDefinition
 
                 if (xrEnabled && xrSupported)
                 {
+                    if (XRGraphics.renderViewportScale != 1.0f)
+                    {
+                        Debug.LogWarning("RenderViewportScale has no effect with this render pipeline. Use dynamic resolution instead.");
+                    }
+
                     if (xrSdkActive)
                     {
                         CreateLayoutFromXrSdk(camera);
