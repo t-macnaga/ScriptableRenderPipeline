@@ -55,6 +55,9 @@ namespace UnityEngine.Rendering.Universal
         // True when this is the very last pass in the pipeline
         bool m_IsFinalPass;
 
+        // If there's a final post process pass after this pass
+        bool m_HasFinalPass;
+
         public PostProcessPass(RenderPassEvent evt, PostProcessData data)
         {
             renderPassEvent = evt;
@@ -97,7 +100,7 @@ namespace UnityEngine.Rendering.Universal
             m_ResetHistory = true;
         }
 
-        public void Setup(in RenderTextureDescriptor baseDescriptor, in RenderTargetHandle source, in RenderTargetHandle destination, in RenderTargetHandle depth, in RenderTargetHandle internalLut)
+        public void Setup(in RenderTextureDescriptor baseDescriptor, in RenderTargetHandle source, in RenderTargetHandle destination, in RenderTargetHandle depth, in RenderTargetHandle internalLut, bool hasFinalPass)
         {
             m_Descriptor = baseDescriptor;
             m_Source = source;
@@ -105,6 +108,7 @@ namespace UnityEngine.Rendering.Universal
             m_Depth = depth;
             m_InternalLut = internalLut;
             m_IsFinalPass = false;
+            m_HasFinalPass = hasFinalPass;
         }
 
         public void SetupFinalPass(in RenderTargetHandle source)
@@ -112,6 +116,7 @@ namespace UnityEngine.Rendering.Universal
             m_Source = source;
             m_Destination = RenderTargetHandle.CameraTarget;
             m_IsFinalPass = true;
+            m_HasFinalPass = false;
         }
 
         public override void Configure(CommandBuffer cmd, RenderTextureDescriptor cameraTextureDescriptor)
@@ -295,7 +300,7 @@ namespace UnityEngine.Rendering.Universal
                 SetupVignette(m_Materials.uber);
                 SetupColorGrading(cmd, ref renderingData, m_Materials.uber);
 
-                // Only apply dithering & grain if we're the final pass
+                // Only apply dithering & grain if there's not a final pass.
                 SetupGrain(cameraData.camera, m_Materials.uber);
                 SetupDithering(ref cameraData, m_Materials.uber);
 
@@ -892,7 +897,7 @@ namespace UnityEngine.Rendering.Universal
 
         void SetupGrain(Camera camera, Material material)
         {
-            if (m_Destination == RenderTargetHandle.CameraTarget && m_FilmGrain.IsActive())
+            if (!m_HasFinalPass && m_FilmGrain.IsActive())
             {
                 material.EnableKeyword(ShaderKeywordStrings.FilmGrain);
                 PostProcessUtils.ConfigureFilmGrain(
@@ -910,7 +915,7 @@ namespace UnityEngine.Rendering.Universal
 
         void SetupDithering(ref CameraData cameraData, Material material)
         {
-            if (m_Destination == RenderTargetHandle.CameraTarget && cameraData.isDitheringEnabled)
+            if (!m_HasFinalPass && cameraData.isDitheringEnabled)
             {
                 material.EnableKeyword(ShaderKeywordStrings.Dithering);
                 m_DitheringTextureIndex = PostProcessUtils.ConfigureDithering(
