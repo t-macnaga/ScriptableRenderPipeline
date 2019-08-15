@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -39,6 +40,12 @@ namespace UnityEngine.Experimental.Rendering.Universal
 
         int m_PreviousShadowGroup = 0;
         bool m_PreviousCastsShadows = true;
+
+        internal bool IsShadowedLayer(int layer)
+        {
+            return m_ApplyToSortingLayers != null ? Array.IndexOf(m_ApplyToSortingLayers, layer) >= 0 : false;
+        }
+
 
         private void Awake()
         {
