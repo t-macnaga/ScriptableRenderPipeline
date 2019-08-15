@@ -253,7 +253,7 @@ namespace UnityEditor.Experimental.Rendering.Universal
             m_BlendStyleNames = blendStyleNames.Select(x => new GUIContent(x)).ToArray();
 
 
-            m_SortingLayerDropDown.OnEnable(serializedObject);
+            m_SortingLayerDropDown.OnEnable(serializedObject, "m_ApplyToSortingLayers");
         }
 
         internal void SendModifiedAnalytics(Analytics.Renderer2DAnalytics analytics, Light2D light)
@@ -579,8 +579,6 @@ namespace UnityEditor.Experimental.Rendering.Universal
                 return;
             }
 
-            //UniversalRenderPipelineAsset asset = UniversalRenderPipeline.asset;
-            //Renderer2DData assetData = asset.scriptableRendererData as Renderer2DData;
             Renderer2DData assetData = Renderer2DData.m_Renderer2DDataInstance;
             if (assetData == null)
             {

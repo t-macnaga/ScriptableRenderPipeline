@@ -33,6 +33,8 @@ namespace UnityEditor.Experimental.Rendering.Universal
 
         string[] m_PopupContent;
 
+        SortingLayerDropDown m_SortingLayerDropDown;
+
 
         public void OnEnable()
         {
@@ -46,6 +48,9 @@ namespace UnityEditor.Experimental.Rendering.Universal
             m_PopupContent[0] = "Auto Assign";
             for(int i=1;i<popupElements;i++)
                 m_PopupContent[i] = i.ToString();
+
+            m_SortingLayerDropDown = new SortingLayerDropDown();
+            m_SortingLayerDropDown.OnEnable(serializedObject, "m_ApplyToSortingLayers");
         }
 
         public void ShadowCaster2DSceneGUI()
@@ -96,7 +101,9 @@ namespace UnityEditor.Experimental.Rendering.Universal
             if (hasShadows)
                 EditorGUILayout.PropertyField(m_SelfShadows, Styles.selfShadows);
 
-            if(m_CastsShadows.boolValue)
+            m_SortingLayerDropDown.OnTargetSortingLayers(serializedObject, targets);
+
+            if (m_CastsShadows.boolValue)
                 ShadowCaster2DInspectorGUI<LightReactor2DShadowCasterShapeTool>();
 
             serializedObject.ApplyModifiedProperties();

@@ -39,9 +39,9 @@ namespace UnityEditor.Experimental.Rendering.Universal
         List<int> m_ApplyToSortingLayersList;
         SerializedProperty m_ApplyToSortingLayers;
 
-        public void OnEnable(SerializedObject serializedObject)
+        public void OnEnable(SerializedObject serializedObject, string propertyName)
         {
-            m_ApplyToSortingLayers = serializedObject.FindProperty("m_ApplyToSortingLayers");
+            m_ApplyToSortingLayers = serializedObject.FindProperty(propertyName);
 
             m_AllSortingLayers = SortingLayer.layers;
             m_AllSortingLayerNames = m_AllSortingLayers.Select(x => new GUIContent(x.name)).ToArray();

@@ -134,10 +134,9 @@ namespace UnityEngine.Experimental.Rendering.Universal
         }
 
 
-        static private void RenderShadows(CommandBuffer cmdBuffer, Light2D light, float shadowIntensity, RenderTargetIdentifier renderTexture)
+        static private void RenderShadows(CommandBuffer cmdBuffer, int layerToRender, Light2D light, float shadowIntensity, RenderTargetIdentifier renderTexture)
         {
             // Render light's shadows
-            //if (light.castsShadows)
             cmdBuffer.SetRenderTarget(s_ShadowsRenderTarget.Identifier()); // This isn't efficient if this light doesn't cast shadow.
             cmdBuffer.ClearRenderTarget(true, true, Color.black);
 
@@ -184,7 +183,7 @@ namespace UnityEngine.Experimental.Rendering.Universal
                                 {
                                     LightReactor2D shadowCaster = (LightReactor2D)shadowCasters[i];
 
-                                    if (shadowCaster != null && shadowMaterial != null)
+                                    if (shadowCaster != null && shadowMaterial != null && shadowCaster.IsShadowedLayer(layerToRender))
                                     {
                                         //float shadowRadiusSq = shadowCaster.radius * shadowCaster.radius;
                                         //Vector3 deltaPos = lightCenterWS - shadowCaster.transform.position;
@@ -248,7 +247,7 @@ namespace UnityEngine.Experimental.Rendering.Universal
                         Mesh lightMesh = light.GetMesh();
                         if (lightMesh != null)
                         {
-                            RenderShadows(cmdBuffer, light, light.shadowIntensity, renderTexture);
+                            RenderShadows(cmdBuffer, layerToRender, light, light.shadowIntensity, renderTexture);
 
                             renderedAnyLight = true;
 
@@ -302,7 +301,7 @@ namespace UnityEngine.Experimental.Rendering.Universal
                                 Mesh lightMesh = light.GetMesh();
                                 if (lightMesh != null)
                                 {
-                                    RenderShadows(cmdBuffer, light, light.shadowVolumeIntensity, renderTexture);
+                                    RenderShadows(cmdBuffer, layerToRender, light, light.shadowVolumeIntensity, renderTexture);
 
                                     if (light.lightType == Light2D.LightType.Sprite && light.lightCookieSprite != null && light.lightCookieSprite.texture != null)
                                         cmdBuffer.SetGlobalTexture("_CookieTex", light.lightCookieSprite.texture);
