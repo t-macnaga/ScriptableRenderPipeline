@@ -63,9 +63,6 @@ namespace UnityEditor.Rendering.HighDefinition
 
         protected static bool IsMaterialQualityVariantStripped(HDRenderPipelineAsset hdrpAsset, ShaderCompilerData inputData)
         {
-            if (IsMaterialQualityVariantStripped(hdrpAsset, inputData))
-                return true;
-
             var shaderMaterialLevel = inputData.shaderKeywordSet.GetMaterialQuality();
             // if there are material quality defines in this shader
             // and they don't match the material quality accepted by the hdrp asset
