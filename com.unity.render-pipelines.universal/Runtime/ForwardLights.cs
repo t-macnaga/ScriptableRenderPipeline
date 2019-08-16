@@ -283,6 +283,9 @@ namespace UnityEngine.Rendering.Universal
         
         int SetupPerObjectLightIndices(CullingResults cullResults, ref LightData lightData)
         {
+            if (lightData.additionalLightsCount == 0)
+                return lightData.additionalLightsCount;
+
             var visibleLights = lightData.visibleLights;
             var perObjectLightIndexMap = cullResults.GetLightIndexMap(Allocator.Temp);
             int directionalLightsCount = 0;
