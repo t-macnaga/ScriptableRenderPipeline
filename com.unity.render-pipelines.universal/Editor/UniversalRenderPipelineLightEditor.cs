@@ -323,7 +323,10 @@ namespace UnityEditor.Rendering.Universal
                     break;
 
                 case LightType.Point:
-                    CoreLightEditorUtilities.DrawPointLightGizmo(light);
+                    using (new Handles.DrawingScope(Matrix4x4.TRS(light.transform.position, Quaternion.identity, Vector3.one)))
+                    {
+                        CoreLightEditorUtilities.DrawPointLightGizmo(light);
+                    }
                     break;
 
                 case LightType.Rectangle:

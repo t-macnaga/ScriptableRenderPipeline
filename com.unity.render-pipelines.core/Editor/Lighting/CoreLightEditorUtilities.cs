@@ -42,7 +42,8 @@ namespace UnityEditor.Rendering
             using (new Handles.DrawingScope(outerColor))
             {
                 EditorGUI.BeginChangeCheck();
-                range = Handles.RadiusHandle(Quaternion.identity, light.transform.position, range, false, true);
+                //range = Handles.RadiusHandle(Quaternion.identity, light.transform.position, range, false, true);
+                range = DoPointHandles(range);
                 if (EditorGUI.EndChangeCheck())
                 {
                     Undo.RecordObject(light, "Adjust Point Light");
@@ -53,10 +54,13 @@ namespace UnityEditor.Rendering
 
         static void DrawPointHandlesAndLabels(Light light)
         {
-            // Getting the first control on radius handle
-            var firstControl = GUIUtility.GetControlID(k_RadiusHandleHash, FocusType.Passive) - 6;
+            // Getting the first control on point handle
+            var firstControl = GUIUtility.GetControlID(s_PointLightHandle.GetHashCode(), FocusType.Passive) -6; // BoxBoundsHandle allocates 6 control IDs
             if (Event.current.type != EventType.Repaint)
                 return;
+//            var firstControl = GUIUtility.GetControlID(k_RadiusHandleHash, FocusType.Passive) - 6;
+//            if (Event.current.type != EventType.Repaint)
+//                return;
 
             // Adding label /////////////////////////////////////
             Vector3 labelPosition = Vector3.zero;
@@ -66,22 +70,22 @@ namespace UnityEditor.Rendering
                 switch (GUIUtility.hotControl - firstControl)
                 {
                     case 0:
-                        labelPosition = light.transform.position + Vector3.right * light.range;
+                        labelPosition = Vector3.right * (light.range / 2);
                         break;
                     case 1:
-                        labelPosition = light.transform.position + Vector3.up * light.range;
+                        labelPosition = Vector3.left * (light.range / 2);
                         break;
                     case 2:
-                        labelPosition = light.transform.position + Vector3.forward * light.range;
+                        labelPosition = Vector3.up * (light.range / 2);
                         break;
                     case 3:
-                        labelPosition = light.transform.position + Vector3.left * light.range;
+                        labelPosition = Vector3.down * (light.range / 2);
                         break;
                     case 4:
-                        labelPosition = light.transform.position + Vector3.down * light.range;
+                        labelPosition = Vector3.forward * (light.range / 2);
                         break;
                     case 5:
-                        labelPosition = light.transform.position + Vector3.back * light.range;
+                        labelPosition = Vector3.back * (light.range / 2);
                         break;
                     default:
                         return;
@@ -90,6 +94,69 @@ namespace UnityEditor.Rendering
                 string labelText = FormattableString.Invariant($"Range: {light.range:0.00}");
                 DrawHandleLabel(labelPosition, labelText);
             }
+
+
+
+
+//            Vector3 labelPosition = Vector3.zero;
+//
+//            if (GUIUtility.hotControl != 0)
+//            {
+//                switch (GUIUtility.hotControl - firstControl)
+//                {
+//                    case 0: // PositiveX
+//                        labelPosition = Vector3.right * (light.areaSize.x / 2);
+//                        break;
+//                    case 1: // NegativeX
+//                        labelPosition = Vector3.left * (light.areaSize.x / 2);
+//                        break;
+//                    case 2: // PositiveY
+//                        labelPosition = Vector3.up * (light.areaSize.x / 2);
+//                        break;
+//                    case 3: // NegativeY
+//                        labelPosition = Vector3.down * (light.areaSize.x / 2);
+//                        break;
+//                    default:
+//                        return;
+//                }
+//                string labelText = FormattableString.Invariant($"Diameter: {light.areaSize.x:0.00}");
+//                DrawHandleLabel(labelPosition, labelText);
+//            }
+
+
+//            Vector3 labelPosition = Vector3.zero;
+//
+//            if (GUIUtility.hotControl != 0)
+//            {
+//                switch (GUIUtility.hotControl - firstControl)
+//                {
+//                    case 0:
+//                        labelPosition = light.transform.position + Vector3.right * light.range;
+//                        break;
+//                    case 1:
+//                        labelPosition = light.transform.position + Vector3.up * light.range;
+//                        break;
+//                    case 2:
+//                        labelPosition = light.transform.position + Vector3.forward * light.range;
+//                        break;
+//                    case 3:
+//                        labelPosition = light.transform.position + Vector3.left * light.range;
+//                        break;
+//                    case 4:
+//                        labelPosition = light.transform.position + Vector3.down * light.range;
+//                        break;
+//                    case 5:
+//                        labelPosition = light.transform.position + Vector3.back * light.range;
+//                        break;
+//                    default:
+//                        return;
+//                }
+//
+//                string labelText = FormattableString.Invariant($"Range: {light.range:0.00}");
+//                DrawHandleLabel(labelPosition, labelText);
+//            }
+
+
         }
 
         /// <summary>
@@ -231,21 +298,23 @@ namespace UnityEditor.Rendering
             }
         }
 
-        static void DrawWithZTest(PrimitiveBoundsHandle handle, float alpha = 0.2f)
+        static void DrawWithZTest(PrimitiveBoundsHandle primitiveHandle, float alpha = 0.2f)
         {
-            handle.handleColor = Color.clear;
-            handle.wireframeColor = Color.white;
+            primitiveHandle.center = Vector3.zero;
+
+            primitiveHandle.handleColor = Color.clear;
+            primitiveHandle.wireframeColor = Color.white;
             Handles.zTest = CompareFunction.LessEqual;
-            handle.DrawHandle();
+            primitiveHandle.DrawHandle();
 
-            handle.wireframeColor = new Color(1f, 1f, 1f, alpha);
+            primitiveHandle.wireframeColor = new Color(1f, 1f, 1f, alpha);
             Handles.zTest = CompareFunction.Greater;
-            handle.DrawHandle();
+            primitiveHandle.DrawHandle();
 
-            handle.handleColor = Color.white;
-            handle.wireframeColor = Color.clear;
+            primitiveHandle.handleColor = Color.white;
+            primitiveHandle.wireframeColor = Color.clear;
             Handles.zTest = CompareFunction.Always;
-            handle.DrawHandle();
+            primitiveHandle.DrawHandle();
         }
 
         static void DrawZTestedLine(float range, Color outerColor, Color innerColor)
@@ -295,6 +364,17 @@ namespace UnityEditor.Rendering
             DrawWithZTest(s_DiscLightHandle);
 
             return s_DiscLightHandle.radius;
+        }
+
+        static readonly SphereBoundsHandle s_PointLightHandle =
+            new SphereBoundsHandle { axes = PrimitiveBoundsHandle.Axes.All };
+
+        static float DoPointHandles(float range)
+        {
+            s_PointLightHandle.radius = range/2;
+            DrawWithZTest(s_PointLightHandle);
+
+            return s_PointLightHandle.radius*2;
         }
 
         static bool drawInnerConeAngle = false;
