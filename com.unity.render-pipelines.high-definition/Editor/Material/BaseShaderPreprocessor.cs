@@ -61,6 +61,14 @@ namespace UnityEditor.Rendering.HighDefinition
             };
         }
 
+        public bool ShadersStripper(HDRenderPipelineAsset hdrpAsset, Shader shader, ShaderSnippetData snippet,
+            ShaderCompilerData inputData)
+        {
+            return IsMaterialQualityVariantStripped(hdrpAsset, inputData) || DoShadersStripper(hdrpAsset, shader, snippet, inputData);
+        }
+
+        protected abstract bool DoShadersStripper(HDRenderPipelineAsset hdrpAsset, Shader shader, ShaderSnippetData snippet, ShaderCompilerData inputData);
+
         protected static bool IsMaterialQualityVariantStripped(HDRenderPipelineAsset hdrpAsset, ShaderCompilerData inputData)
         {
             var shaderMaterialLevel = inputData.shaderKeywordSet.GetMaterialQuality();
@@ -74,7 +82,5 @@ namespace UnityEditor.Rendering.HighDefinition
 
             return false;
         }
-
-        public abstract bool ShadersStripper(HDRenderPipelineAsset hdrpAsset, Shader shader, ShaderSnippetData snippet, ShaderCompilerData inputData);
     }
 }

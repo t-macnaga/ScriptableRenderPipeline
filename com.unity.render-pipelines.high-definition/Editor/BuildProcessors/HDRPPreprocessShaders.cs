@@ -13,11 +13,8 @@ namespace UnityEditor.Rendering.HighDefinition
     {
         public CommonShaderPreprocessor() { }
 
-        public override bool ShadersStripper(HDRenderPipelineAsset hdrpAsset, Shader shader, ShaderSnippetData snippet, ShaderCompilerData inputData)
+        protected override bool DoShadersStripper(HDRenderPipelineAsset hdrpAsset, Shader shader, ShaderSnippetData snippet, ShaderCompilerData inputData)
         {
-            if (IsMaterialQualityVariantStripped(hdrpAsset, inputData))
-                return true;
-            
             // Strip every useless shadow configs
             var shadowInitParams = hdrpAsset.currentPlatformRenderPipelineSettings.hdShadowInitParams;
 
