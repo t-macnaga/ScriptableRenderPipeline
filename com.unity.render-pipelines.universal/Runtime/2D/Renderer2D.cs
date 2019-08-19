@@ -66,7 +66,7 @@ namespace UnityEngine.Experimental.Rendering.Universal
 
                 if (ppc != null && ppc.upscaleRT && ppc.isRunning)
                 {
-                    m_PostProcessPass.Setup(cameraData.cameraTargetDescriptor, m_ColorTargetHandle, m_AfterPostProcessColor, new RenderTargetHandle(), m_ColorGradingLut, false);
+                    m_PostProcessPass.Setup(cameraData.cameraTargetDescriptor, m_ColorTargetHandle, m_AfterPostProcessColor, RenderTargetHandle.CameraTarget, m_ColorGradingLut, false);
                     EnqueuePass(m_PostProcessPass);
 
                     requireFinalBlitPass = true;
@@ -74,7 +74,7 @@ namespace UnityEngine.Experimental.Rendering.Universal
                 }
                 else if (renderingData.cameraData.antialiasing == AntialiasingMode.FastApproximateAntialiasing)
                 {
-                    m_PostProcessPass.Setup(cameraData.cameraTargetDescriptor, m_ColorTargetHandle, m_AfterPostProcessColor, new RenderTargetHandle(), m_ColorGradingLut, true);
+                    m_PostProcessPass.Setup(cameraData.cameraTargetDescriptor, m_ColorTargetHandle, m_AfterPostProcessColor, RenderTargetHandle.CameraTarget, m_ColorGradingLut, true);
                     EnqueuePass(m_PostProcessPass);
                     m_FinalPostProcessPass.SetupFinalPass(m_AfterPostProcessColor);
                     EnqueuePass(m_FinalPostProcessPass);
@@ -83,7 +83,7 @@ namespace UnityEngine.Experimental.Rendering.Universal
                 }
                 else
                 {
-                    m_PostProcessPass.Setup(cameraData.cameraTargetDescriptor, m_ColorTargetHandle, RenderTargetHandle.CameraTarget, new RenderTargetHandle(), m_ColorGradingLut, false);
+                    m_PostProcessPass.Setup(cameraData.cameraTargetDescriptor, m_ColorTargetHandle, RenderTargetHandle.CameraTarget, RenderTargetHandle.CameraTarget, m_ColorGradingLut, false);
                     EnqueuePass(m_PostProcessPass);
 
                     requireFinalBlitPass = false;
