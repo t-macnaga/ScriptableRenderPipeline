@@ -5,7 +5,6 @@ namespace UnityEngine.Experimental.Rendering.Universal
 {
     internal class Renderer2D : ScriptableRenderer
     {
-        VolumeBlendingPass m_VolumeBlendingPass;
         ColorGradingLutPass m_ColorGradingLutPass;
         Render2DLightingPass m_Render2DLightingPass;
         PostProcessPass m_PostProcessPass;
@@ -18,7 +17,6 @@ namespace UnityEngine.Experimental.Rendering.Universal
 
         public Renderer2D(Renderer2DData data) : base(data)
         {
-            m_VolumeBlendingPass = new VolumeBlendingPass(RenderPassEvent.BeforeRendering);
             m_ColorGradingLutPass = new ColorGradingLutPass(RenderPassEvent.BeforeRenderingOpaques, data.postProcessData);
             m_Render2DLightingPass = new Render2DLightingPass(data);
             m_PostProcessPass = new PostProcessPass(RenderPassEvent.BeforeRenderingPostProcessing, data.postProcessData);
@@ -31,8 +29,6 @@ namespace UnityEngine.Experimental.Rendering.Universal
 
         public override void Setup(ScriptableRenderContext context, ref RenderingData renderingData)
         {
-            EnqueuePass(m_VolumeBlendingPass);
-
             ref CameraData cameraData = ref renderingData.cameraData;
             m_ColorTargetHandle = RenderTargetHandle.CameraTarget;
             PixelPerfectCamera ppc = cameraData.camera.GetComponent<PixelPerfectCamera>();
