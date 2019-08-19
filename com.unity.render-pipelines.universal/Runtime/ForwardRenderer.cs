@@ -294,7 +294,7 @@ namespace UnityEngine.Rendering.Universal
             //     cullingParameters.cullingOptions |= CullingOptions.DisablePerObjectCulling;
             // }
 
-            cullingParameters.shadowDistance = Mathf.Min(cameraData.maxShadowDistance, camera.farClipPlane);
+            cullingParameters.shadowDistance = cameraData.maxShadowDistance;
         }
 
         public override void FinishRendering(CommandBuffer cmd)
