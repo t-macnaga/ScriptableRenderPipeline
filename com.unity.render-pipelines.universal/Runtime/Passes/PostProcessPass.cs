@@ -68,6 +68,7 @@ namespace UnityEngine.Rendering.Universal.Internal
         // Some Android devices do not support sRGB backbuffer
         // We need to do the conversion manually on those
         bool m_EnableSRGBConversionIfNeeded;
+        ScriptableRenderContext m_Context;
 
         public PostProcessPass(RenderPassEvent evt, PostProcessData data)
         {
@@ -123,6 +124,15 @@ namespace UnityEngine.Rendering.Universal.Internal
             m_IsFinalPass = false;
             m_HasFinalPass = hasFinalPass;
             m_EnableSRGBConversionIfNeeded = enableSRGBConversion;
+            var manager = VolumeManager.instance;
+            foreach(var type in manager.baseComponentTypes)
+            {
+                if( type.IsSubclassOf(typeof(CustomPostProcessVolumeComponent)))
+                {
+                    var component = manager.stack.GetComponent(type) as CustomPostProcessVolumeComponent;
+                    component.SetupIfNeeded();
+        }
+            }
         }
 
         public void SetupFinalPass(in RenderTargetHandle source)
@@ -159,6 +169,8 @@ namespace UnityEngine.Rendering.Universal.Internal
         /// <inheritdoc/>
         public override void Execute(ScriptableRenderContext context, ref RenderingData renderingData)
         {
+            m_Context = context;
+
             // Start by pre-fetching all builtin effect settings we need
             // Some of the color-grading settings are only used in the color grading lut pass
             var stack = VolumeManager.instance.stack;
@@ -310,6 +322,20 @@ namespace UnityEngine.Rendering.Universal.Internal
                 }
             }
 
+            // Custom Post Processes
+            foreach(var type in VolumeManager.instance.baseComponentTypes)
+            {
+                if( type.IsSubclassOf(typeof(CustomPostProcessVolumeComponent)))
+                {
+                    var component = VolumeManager.instance.stack.GetComponent(type) as CustomPostProcessVolumeComponent;
+                    if( component.IsActive())
+                    {
+                        component.Render(m_Context,cmd,ref renderingData,GetSource(),GetDestination());
+                        Swap();
+                    }
+                }
+            }
+            
             // Combined post-processing stack
             using (new ProfilingScope(cmd, ProfilingSampler.Get(URPProfileId.UberPostProcess)))
             {
